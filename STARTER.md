@@ -20,7 +20,12 @@ Whenever you debug, encounter, or solve a new error/issue in the codebase (e.g.,
     - **Trace Context**: The exact file path, initiating node, and target failure point.
     - **Resolution**: Step-by-step fix or code workaround.
 
-## 3. The Golden Rule (RTK)
+## 3. Progress Tracking & PR Protocol
+On each daily progress update or session update:
+1. **Update Task Tracker**: You MUST update [docs/tracker_docs/task.md](file:///d:/CHAKKSSS/ZooSite/docs/tracker_docs/task.md) to document the day's achievements, completed items, and verifications under the corresponding date.
+2. **Commit with the PR**: Ensure these progress updates are committed and pushed within the current branch/PR, keeping the task tracker and development progress fully aligned.
+
+## 4. The Golden Rule (RTK)
 **Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This is mandatory for token efficiency.
 
 **Important**: Even in command chains with `&&`, use `rtk`:
