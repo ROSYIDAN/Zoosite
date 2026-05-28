@@ -1,1 +1,0 @@
-use the preview layout on the post new animals

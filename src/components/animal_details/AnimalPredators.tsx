@@ -1,8 +1,16 @@
-interface AnimalPredatorsProps {
-  predators: string[];
+import BreadcrumbLink from "@/components/breadcrumbs/BreadcrumbLink";
+
+export interface PredatorInfo {
+  name: string;
+  slug: string | null;
 }
 
-export default function AnimalPredators({ predators }: AnimalPredatorsProps) {
+interface AnimalPredatorsProps {
+  predators: PredatorInfo[];
+  currentAnimalName: string;
+}
+
+export default function AnimalPredators({ predators, currentAnimalName }: AnimalPredatorsProps) {
   if (!predators || predators.length === 0) return null;
 
   return (
@@ -11,15 +19,36 @@ export default function AnimalPredators({ predators }: AnimalPredatorsProps) {
         Predators
       </h3>
       <div className="flex flex-wrap gap-2">
-        {predators.map((predator, idx) => (
-          <div
-            key={idx}
-            className="bg-surface-container-high px-3 py-2 rounded-xl border border-outline-variant/10"
-          >
-            <span className="text-sm font-medium text-on-surface">{predator}</span>
-          </div>
-        ))}
+        {predators.map((predator, idx) => {
+          if (predator.slug) {
+            return (
+              <BreadcrumbLink
+                key={idx}
+                href={`/animals/${predator.slug}`}
+                breadcrumbLabel={currentAnimalName}
+                className="group flex items-center gap-1.5 bg-surface-container-high hover:bg-primary/10 px-3 py-2 rounded-xl border border-outline-variant/10 hover:border-primary/20 transition-all duration-200 cursor-pointer active:scale-95 select-none"
+              >
+                <span className="text-sm font-semibold text-primary group-hover:underline">
+                  {predator.name}
+                </span>
+                <span className="material-symbols-outlined text-[16px] text-primary/70 group-hover:text-primary transition-colors">
+                  link
+                </span>
+              </BreadcrumbLink>
+            );
+          }
+
+          return (
+            <div
+              key={idx}
+              className="bg-surface-container-high px-3 py-2 rounded-xl border border-outline-variant/10 select-none"
+            >
+              <span className="text-sm font-medium text-on-surface">{predator.name}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
+

@@ -1,5 +1,6 @@
 import { AppError } from "@/lib/errors";
 import { animalRepo } from "@/repositories/animal.repo";
+import { prisma } from "@/lib/prisma";
 import {
   toAnimalDetail,
   toAnimalListItem,
@@ -20,7 +21,7 @@ export const animalService = {
    * List animals with optional diet filter and pagination.
    * Returns { data, meta } shape.
    */
-  async list(query: ListAnimalsQuery) {
+  async list(query: ListAnimalsQuery & { includeHidden?: boolean }) {
     const limit = query.limit ?? 10;
     const page = query.page ?? 1;
 
@@ -50,9 +51,12 @@ export const animalService = {
    * Get a single animal by slug.
    * Throws AppError(404) if not found.
    */
-  async getBySlug(slug: string) {
+  async getBySlug(slug: string, includeHidden = false) {
     const raw = await animalRepo.findBySlug(slug);
     if (!raw) throw new AppError("Animal not found", 404, "NOT_FOUND");
+    if (!raw.is_visible && !includeHidden) {
+      throw new AppError("Animal not found", 404, "NOT_FOUND");
+    }
     return toAnimalDetail(raw);
   },
 
@@ -95,6 +99,20 @@ export const animalService = {
     const existing = await animalRepo.findImgbbUrlByAnimalId(id);
     if (existing?.image_url) {
       return existing.image_url;
+    }
+
+    // 1b. Fallback: Check if ANY valid web image URL exists in the DB (e.g. Cloudinary, Unsplash, external links)
+    const anyImage = await prisma.animal_images.findFirst({
+      where: {
+        animal_id: id,
+        image_url: {
+          startsWith: "http",
+        },
+      },
+      select: { image_url: true },
+    });
+    if (anyImage?.image_url) {
+      return anyImage.image_url;
     }
 
     // 2. Find local file

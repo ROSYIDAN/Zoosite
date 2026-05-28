@@ -48,6 +48,26 @@ export default function RequestIdentitySection({ register, errors, isChecking, n
           )}
         </div>
 
+        <div>
+          <label className="block text-xs font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-2">
+            Search Synonyms / Nicknames (Comma Separated)
+          </label>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-[#1a1c19]/30">
+              alternate_email
+            </span>
+            <input
+              type="text"
+              {...register("synonyms")}
+              placeholder="e.g. mountain lion, puma, catamount"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#1a1c19]/10 focus:border-[#2d5a27] focus:ring-1 focus:ring-[#2d5a27] outline-none transition-all text-sm bg-[#fafaf5]/50"
+            />
+          </div>
+          <p className="text-[10px] text-[#1a1c19]/40 mt-1.5 px-1">
+            Add alternative names or common groupings separated by commas so users can easily find this animal on search.
+          </p>
+        </div>
+
         {/* Live check results display */}
         <AnimatePresence mode="wait">
           {nameCheckResult && (

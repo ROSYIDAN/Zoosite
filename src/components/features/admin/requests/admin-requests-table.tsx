@@ -23,6 +23,7 @@ interface RequestDetail {
   image_url: string | null;
   image_public_id: string | null;
   scientific_name: string | null;
+  synonyms: string | null;
   family: string | null;
   genus: string | null;
   ordo: string | null;
@@ -66,7 +67,6 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
   const [activeReviewId, setActiveReviewId] = useState<string | null>(null);
 
   // Modals / Overlays states
-  const [editingRequest, setEditingRequest] = useState<RequestDetail | null>(null);
   const [rejectingRequest, setRejectingRequest] = useState<RequestDetail | null>(null);
   const [banningUser, setBanningUser] = useState<{ userId: string; name: string } | null>(null);
   const [banDuration, setBanDuration] = useState<"7" | "30" | "PERMANENT">("7");
@@ -74,8 +74,8 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
   // Rejection input
   const [rejectReason, setRejectReason] = useState("");
 
-  // Image Reveal state per request ID
-  const [revealedImages, setRevealedImages] = useState<Record<string, boolean>>({});
+  // Image safety blur level per request ID (3 = Max, 2 = Medium, 1 = Clear)
+  const [blurLevels, setBlurLevels] = useState<Record<string, 3 | 2 | 1>>({});
 
   const filteredRequests = requests.filter((req) => {
     if (activeTab === "ALL") return true;
@@ -83,8 +83,22 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
     return req.status === activeTab;
   });
 
-  const toggleRevealImage = (id: string) => {
-    setRevealedImages((prev) => ({ ...prev, [id]: !prev[id] }));
+  const getBlurLevel = (id: string): 3 | 2 | 1 => {
+    return blurLevels[id] ?? 3;
+  };
+
+  const cycleBlurLevel = (id: string) => {
+    setBlurLevels((prev) => {
+      const current = prev[id] ?? 3;
+      if (current === 3) return { ...prev, [id]: 2 };
+      if (current === 2) return { ...prev, [id]: 1 };
+      return prev;
+    });
+  };
+
+  const resetBlurLevel = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBlurLevels((prev) => ({ ...prev, [id]: 3 }));
   };
 
   const handleAction = async (id: string, payload: Record<string, any>, successMsg: string) => {
@@ -137,7 +151,14 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
   };
 
   const handleLock = async (id: string) => {
-    await handleAction(id, { action: "LOCK" }, "Request locked for review successfully.");
+    const success = await handleAction(id, { action: "LOCK" }, "Request locked for review successfully.");
+    if (success) {
+      router.push(`/admin/requests/${id}/review`);
+    }
+  };
+
+  const handleUnlock = async (id: string) => {
+    await handleAction(id, { action: "UNLOCK" }, "Request review lock released.");
   };
 
   const handleOpenReject = (req: RequestDetail) => {
@@ -233,41 +254,7 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
     }
   };
 
-  // Editable Form Submit (Fix-on-Approve)
-  const handleEditApproveSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editingRequest) return;
 
-    const formData = new FormData(e.currentTarget);
-    const approvedFields = {
-      name: formData.get("animal_name") as string,
-      scientific_name: formData.get("scientific_name") as string,
-      family: formData.get("family") as string,
-      genus: formData.get("genus") as string,
-      ordo: formData.get("ordo") as string,
-      class_id: formData.get("class_id") as string,
-      description: formData.get("description") as string,
-      description_source: formData.get("description_source") as string,
-      diet: formData.get("diet") as string,
-      lifespan_years: formData.get("lifespan_years") as string,
-      weight_kg: formData.get("weight_kg") as string,
-      height_cm: formData.get("height_cm") as string,
-      avg_speed_kmh: formData.get("avg_speed_kmh") as string,
-      top_speed_kmh: formData.get("top_speed_kmh") as string,
-      social_structure: formData.get("social_structure") as string,
-      conservation_status: formData.get("conservation_status") as string,
-      predators: formData.get("predators") as string,
-      image: editingRequest.image_url,
-      image_source: "Community Request",
-    };
-
-    const success = await handleAction(
-      editingRequest.id,
-      { action: "APPROVE", approvedFields },
-      "Animal approved, corrections saved, and database profile created!"
-    );
-    if (success) setEditingRequest(null);
-  };
 
   const getStrikeCount = (userId: string) => {
     // Dynamic local count based on loaded state
@@ -326,45 +313,76 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
               >
                 {/* Left side: Image + details */}
                 <div className="flex flex-col sm:flex-row gap-6 flex-1">
-                  {/* CSS Safety Blur Shield Image container */}
-                  <div className="relative w-full sm:w-40 h-40 rounded-xl overflow-hidden shrink-0 border border-[#c2c9bb]">
-                    {req.image_url ? (
-                      <>
-                        <img
-                          src={req.image_url}
-                          alt="Animal uploaded reference"
-                          className={cn(
-                            "w-full h-full object-cover transition-all duration-500",
-                            !revealedImages[req.id] && "blur-xl scale-110 select-none"
-                          )}
-                        />
-                        {!revealedImages[req.id] && (
-                          <button
-                            type="button"
-                            onClick={() => toggleRevealImage(req.id)}
-                            className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white gap-1.5"
-                          >
-                            <span className="material-symbols-outlined text-[24px]">visibility_off</span>
-                            <span className="text-[9px] font-bold uppercase tracking-wider">Reveal Reference</span>
-                          </button>
+                  {/* CSS Safety Blur Shield Image container (disabled for approved requests) */}
+                  {(() => {
+                    const isApproved = req.status === "APPROVED";
+                    const level = isApproved ? 1 : getBlurLevel(req.id);
+                    return (
+                      <div 
+                        onClick={() => !isApproved && cycleBlurLevel(req.id)}
+                        className={cn(
+                          "relative w-full sm:w-40 h-40 rounded-xl overflow-hidden shrink-0 border border-[#c2c9bb] transition-all select-none",
+                          !isApproved && level > 1 ? "cursor-pointer" : "cursor-default"
                         )}
-                        {revealedImages[req.id] && (
-                          <button
-                            type="button"
-                            onClick={() => toggleRevealImage(req.id)}
-                            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[16px]">visibility</span>
-                          </button>
+                      >
+                        {req.image_url ? (
+                          <>
+                            <img
+                              src={req.image_url}
+                              alt="Animal uploaded reference"
+                              className={cn(
+                                "w-full h-full object-cover transition-all duration-500",
+                                level === 3 && "blur-2xl scale-110",
+                                level === 2 && "blur-md scale-102",
+                                level === 1 && "blur-none"
+                              )}
+                            />
+                        
+                            {/* Overlay Controls — only for non-approved requests */}
+                            {!isApproved && level === 3 && (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 text-white gap-1.5 p-2 text-center transition-all duration-300">
+                                <span className="material-symbols-outlined text-[24px] text-amber-400 animate-pulse">shield</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wider font-['Plus_Jakarta_Sans']">Safety 3x Blur</span>
+                                <span className="text-[7.5px] opacity-85 uppercase tracking-wide font-medium">Click to inspect</span>
+                              </div>
+                            )}
+
+                            {!isApproved && level === 2 && (
+                              <>
+                                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[7.5px] font-bold uppercase tracking-widest border border-white/10">
+                                  2x Blur
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => resetBlurLevel(req.id, e)}
+                                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 border border-white/10 transition-colors shadow-md"
+                                  title="Reset to 3x Blur"
+                                >
+                                  <span className="material-symbols-outlined text-[15px]">lock</span>
+                                </button>
+                              </>
+                            )}
+
+                            {!isApproved && level === 1 && (
+                              <button
+                                type="button"
+                                onClick={(e) => resetBlurLevel(req.id, e)}
+                                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 border border-white/10 transition-colors shadow-md"
+                                title="Reset to 3x Blur"
+                              >
+                                <span className="material-symbols-outlined text-[15px]">lock</span>
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <div className="w-full h-full bg-[#fafaf5] flex flex-col items-center justify-center text-[#1a1c19]/30">
+                            <span className="material-symbols-outlined text-[32px]">image_not_supported</span>
+                            <span className="text-[10px] font-bold uppercase mt-1">No Image</span>
+                          </div>
                         )}
-                      </>
-                    ) : (
-                      <div className="w-full h-full bg-[#fafaf5] flex flex-col items-center justify-center text-[#1a1c19]/30">
-                        <span className="material-symbols-outlined text-[32px]">image_not_supported</span>
-                        <span className="text-[10px] font-bold uppercase mt-1">No Image</span>
                       </div>
-                    )}
-                  </div>
+                    );
+                  })()}
 
                   {/* Core details */}
                   <div className="space-y-3 flex-1">
@@ -431,10 +449,17 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
                   {req.status === "IN_REVIEW" && (
                     <>
                       <button
-                        onClick={() => setEditingRequest(req)}
+                        onClick={() => router.push(`/admin/requests/${req.id}/review`)}
                         className="px-6 py-2.5 bg-green-700 hover:bg-green-800 text-white text-xs font-bold font-['Plus_Jakarta_Sans'] uppercase tracking-wider rounded-xl shadow-sm transition-all"
                       >
                         {req.request_type === "FULL_DETAIL" ? "Review & Approve" : "Complete & Approve"}
+                      </button>
+
+                      <button
+                        onClick={() => handleUnlock(req.id)}
+                        className="px-6 py-2.5 border border-amber-300 text-amber-700 hover:bg-amber-50 text-xs font-bold font-['Plus_Jakarta_Sans'] uppercase tracking-wider rounded-xl transition-colors font-semibold"
+                      >
+                        Cancel Review
                       </button>
 
                       <button
@@ -483,180 +508,7 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
         </AnimatePresence>
       </div>
 
-      {/* ── Overlay 1: Edit & Approve (Fix-on-Approve Panel) ── */}
-      <AnimatePresence>
-        {editingRequest && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="bg-white border border-[#c2c9bb] rounded-3xl w-full max-w-[800px] max-h-[85vh] overflow-y-auto shadow-2xl p-8"
-            >
-              <div className="flex items-center justify-between border-b border-[#e3e3de] pb-4 mb-6">
-                <h3 className="text-md font-bold text-[#1a1c19] font-['Plus_Jakarta_Sans'] uppercase tracking-wider">
-                  Correct & Approve Request
-                </h3>
-                <button
-                  onClick={() => setEditingRequest(null)}
-                  className="w-8 h-8 rounded-full bg-[#fafaf5] border border-[#c2c9bb] text-[#1a1c19]/50 flex items-center justify-center hover:bg-[#e3e3de]"
-                >
-                  <span className="material-symbols-outlined text-[18px]">close</span>
-                </button>
-              </div>
 
-              <form onSubmit={handleEditApproveSubmit} className="space-y-6 text-xs">
-                {/* Quick Info Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Common Name</label>
-                    <input
-                      name="animal_name"
-                      defaultValue={editingRequest.animal_name}
-                      type="text"
-                      className="w-full px-4 py-2.5 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Scientific Name</label>
-                    <input
-                      name="scientific_name"
-                      defaultValue={editingRequest.scientific_name || ""}
-                      type="text"
-                      className="w-full px-4 py-2.5 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Animal Class</label>
-                    <select
-                      name="class_id"
-                      defaultValue={editingRequest.class_id || ""}
-                      className="w-full px-4 py-2.5 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    >
-                      <option value="">Select Class...</option>
-                      {classes.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Family</label>
-                    <input
-                      name="family"
-                      defaultValue={editingRequest.family || ""}
-                      type="text"
-                      className="w-full px-4 py-2.5 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Genus</label>
-                    <input
-                      name="genus"
-                      defaultValue={editingRequest.genus || ""}
-                      type="text"
-                      className="w-full px-4 py-2.5 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Diet</label>
-                    <input
-                      name="diet"
-                      defaultValue={editingRequest.diet || ""}
-                      type="text"
-                      className="w-full px-4 py-2.5 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    />
-                  </div>
-                </div>
-
-                {/* Description Box */}
-                <div>
-                  <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Summary Description</label>
-                  <textarea
-                    name="description"
-                    defaultValue={editingRequest.description || ""}
-                    rows={4}
-                    className="w-full px-4 py-2.5 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27] font-['Manrope']"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Source Link</label>
-                  <input
-                    name="description_source"
-                    defaultValue={editingRequest.description_source || ""}
-                    type="text"
-                    className="w-full px-4 py-2.5 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                  />
-                </div>
-
-                {/* Stats grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Conservation</label>
-                    <input
-                      name="conservation_status"
-                      defaultValue={editingRequest.conservation_status || ""}
-                      type="text"
-                      className="w-full px-3 py-2 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Lifespan (Yrs)</label>
-                    <input
-                      name="lifespan_years"
-                      defaultValue={editingRequest.lifespan_years || ""}
-                      type="text"
-                      className="w-full px-3 py-2 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Weight</label>
-                    <input
-                      name="weight_kg"
-                      defaultValue={editingRequest.weight_kg || ""}
-                      type="text"
-                      className="w-full px-3 py-2 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-bold text-[#1a1c19]/50 uppercase tracking-wider mb-1">Height</label>
-                    <input
-                      name="height_cm"
-                      defaultValue={editingRequest.height_cm || ""}
-                      type="text"
-                      className="w-full px-3 py-2 border border-[#1a1c19]/10 rounded-xl outline-none focus:border-[#2d5a27]"
-                    />
-                  </div>
-                </div>
-
-                {/* Submit row */}
-                <div className="pt-4 border-t border-[#e3e3de] flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditingRequest(null)}
-                    className="px-4 py-2 border border-[#c2c9bb] rounded-xl font-bold"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2.5 bg-[#2d5a27] text-white rounded-xl font-bold font-['Plus_Jakarta_Sans'] uppercase tracking-wider hover:bg-[#1f3f1b]"
-                  >
-                    Save & Approve
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Overlay 2: Rejection Input Modal ── */}
       <AnimatePresence>

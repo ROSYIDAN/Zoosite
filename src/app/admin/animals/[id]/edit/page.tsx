@@ -30,6 +30,7 @@ export default async function EditAnimalPage({
     id: animal.id,
     name: animal.animal_name || "",
     scientific_name: animal.scientific_name || "",
+    synonyms: animal.synonyms || "",
     family: animal.family || undefined,
     genus: animal.genus || undefined,
     ordo: animal.ordo || undefined,

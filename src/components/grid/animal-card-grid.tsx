@@ -39,7 +39,7 @@ export default function AnimalCardGrid({ animals, currentPageLabel }: AnimalCard
     <div className="space-y-10">
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {paginatedAnimals.map((animal) => (
+        {paginatedAnimals.map((animal, idx) => (
           <BreadcrumbLink
             key={animal.id}
             href={`/animals/${animal.slug}`}
@@ -52,6 +52,7 @@ export default function AnimalCardGrid({ animals, currentPageLabel }: AnimalCard
                   src={animal.image}
                   fallbackSrc="/static_image.png"
                   alt={animal.name}
+                  priority={idx < 4}
                   className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
                   containerClassName="absolute inset-0"
                 />

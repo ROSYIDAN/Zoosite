@@ -22,6 +22,7 @@ export const listAnimalsQuerySchema = z.object({
 export const createAnimalSchema = z.object({
   name: z.string().min(1, "Common name is required"),
   scientific_name: z.string().min(1, "Scientific name is required"),
+  synonyms: z.string().optional().or(z.literal("")),
   family: z.string().optional(),
   genus: z.string().optional(),
   ordo: z.string().optional(),

@@ -7,27 +7,30 @@ import { createAnimalSchema, type CreateAnimalInput } from "@/lib/validations/an
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 
-import AnimalIdentityCard from "./animal-identity-card";
-import AnimalDescriptionCard from "./animal-description-card";
-import AnimalDetailStatsCard from "./animal-detail-stats-card";
-import AnimalClassificationCard from "./animal-classification-card";
-import AnimalMediaCard from "./animal-media-card";
-import AnimalTagCard from "./animal-tag-card";
-import AnimalDistributionCard from "./animal-distribution-card";
-import AnimalFormActions from "./animal-form-actions";
-import AnimalPreviewModal from "./AnimalPreviewModal";
+import AnimalIdentityCard from "./animal-form-admin/animal-identity-card";
+import AnimalDescriptionCard from "./animal-form-admin/animal-description-card";
+import AnimalDetailStatsCard from "./animal-form-admin/animal-detail-stats-card";
+import AnimalClassificationCard from "./animal-form-admin/animal-classification-card";
+import AnimalMediaCard from "./animal-form-admin/animal-media-card";
+import AnimalTagCard from "./animal-form-admin/animal-tag-card";
+import AnimalDistributionCard from "./animal-form-admin/animal-distribution-card";
+import AnimalFormActions from "./animal-form-admin/animal-form-actions";
+import AnimalPreviewModal from "./animal-form-admin/AnimalPreviewModal";
 
 interface AnimalFormProps {
   classes: { id: string; name: string }[];
   initialData?: CreateAnimalInput & { id?: string };
   initialCountries?: { id: string; country: string; country_flag: string | null }[];
+  onSubmitOverride?: (data: CreateAnimalInput) => Promise<void>;
+  onCancelOverride?: () => void | Promise<void>;
 }
 
-export default function AnimalForm({ classes, initialData, initialCountries }: AnimalFormProps) {
+export default function AnimalForm({ classes, initialData, initialCountries, onSubmitOverride, onCancelOverride }: AnimalFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const isEditing = !!initialData?.id;
+  const isReviewMode = !!onSubmitOverride;
 
   const {
     register,
@@ -61,6 +64,7 @@ export default function AnimalForm({ classes, initialData, initialCountries }: A
       tags: initialData?.tags || [],
       countries: initialData?.countries || [],
       habitats: initialData?.habitats || [],
+      synonyms: initialData?.synonyms || "",
     },
   });
 
@@ -77,6 +81,15 @@ export default function AnimalForm({ classes, initialData, initialCountries }: A
   const ordo = watch("ordo");
 
   const onSubmit = async (data: CreateAnimalInput) => {
+    if (onSubmitOverride) {
+      setIsSubmitting(true);
+      try {
+        await onSubmitOverride(data);
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
     setIsSubmitting(true);
     try {
       const url = isEditing ? `/api/animals/${initialData.id}` : "/api/animals";
@@ -95,7 +108,7 @@ export default function AnimalForm({ classes, initialData, initialCountries }: A
 
         throw new Error(
           errorPayload.message ||
-            `Failed to ${isEditing ? "update" : "create"} animal`
+          `Failed to ${isEditing ? "update" : "create"} animal`
         );
       }
 
@@ -114,8 +127,8 @@ export default function AnimalForm({ classes, initialData, initialCountries }: A
 
   return (
     <>
-      <form 
-        onSubmit={handleSubmit(onSubmit)} 
+      <form
+        onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 pb-20"
         style={{ scrollbarGutter: 'stable' }}
       >
@@ -127,7 +140,7 @@ export default function AnimalForm({ classes, initialData, initialCountries }: A
           <div>
             <h4 className="text-sm font-bold text-primary font-['Plus_Jakarta_Sans']">Smart Taxonomy Assist</h4>
             <p className="text-xs text-primary/70 font-['Manrope']">
-              <strong>Family</strong> and <strong>Genus</strong> fields auto-suggest from existing database records. 
+              <strong>Family</strong> and <strong>Genus</strong> fields auto-suggest from existing database records.
               If no match is found, use the <strong className="text-[#4285F4]">G</strong><strong className="text-[#EA4335]">o</strong><strong className="text-[#FBBC05]">o</strong><strong className="text-[#4285F4]">g</strong><strong className="text-[#34A853]">l</strong><strong className="text-[#EA4335]">e</strong> link next to field labels to search online.
             </p>
           </div>
@@ -149,8 +162,8 @@ export default function AnimalForm({ classes, initialData, initialCountries }: A
         <div className="lg:col-span-2 flex flex-col gap-8">
           <AnimalDistributionCard setValue={setValue} watch={watch} initialCountries={initialCountries} commonName={commonName} />
           <AnimalTagCard setValue={setValue} watch={watch} />
-          <AnimalMediaCard register={register} setValue={setValue} watch={watch} errors={errors} commonName={commonName} onPreview={() => setIsPreviewOpen(true)} />
-          <AnimalFormActions isSubmitting={isSubmitting} isDirty={isDirty} isValid={isValid} isEditing={isEditing} />
+          <AnimalMediaCard register={register} setValue={setValue} watch={watch} errors={errors} commonName={commonName} onPreview={() => setIsPreviewOpen(true)} isSafetyBlurEnabled={isReviewMode} />
+          <AnimalFormActions isSubmitting={isSubmitting} isDirty={isDirty} isValid={isValid} isEditing={isEditing} onCancel={onCancelOverride} />
         </div>
       </form>
 

@@ -14,6 +14,7 @@ interface MediaPickerProps {
   compact?: boolean;
   allowUpload?: boolean;
   allowSearch?: boolean;
+  isSafetyBlurEnabled?: boolean;
 }
 
 /**
@@ -29,6 +30,7 @@ export default function MediaPicker({
   compact = false,
   allowUpload = true,
   allowSearch = true,
+  isSafetyBlurEnabled = false,
 }: MediaPickerProps) {
   const [activeTab, setActiveTab] = useState<"search" | "upload">("search");
   const [selectedImage, setSelectedImage] = useState<string | null>(initialValue || null);
@@ -75,7 +77,7 @@ export default function MediaPicker({
       {/* Selected Preview */}
       {selectedImage ? (
         <div className="flex-1 flex flex-col justify-center">
-          <SelectedPreview url={selectedImage} isLinked={!!selectedRefId} onClear={handleClear} />
+          <SelectedPreview url={selectedImage} isLinked={!!selectedRefId} onClear={handleClear} disableBlur={!isSafetyBlurEnabled} />
         </div>
       ) : (
         <div className="border-2 border-dashed border-[#c2c9bb] rounded-xl p-6 bg-[#fafaf5] text-center flex-1 flex flex-col items-center justify-center">

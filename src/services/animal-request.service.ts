@@ -154,6 +154,13 @@ export const animalRequestService = {
   },
 
   /**
+   * Unlocks the request, cancelling active review.
+   */
+  async unlockRequest(id: string) {
+    return await animalRequestRepo.unlock(id);
+  },
+
+  /**
    * Rejects a request and stores the reason.
    */
   async rejectRequest(id: string, rejectReason: string) {
@@ -185,6 +192,7 @@ export const animalRequestService = {
     const animalInput = {
       name: approvedFields.name || request.animal_name,
       scientific_name: approvedFields.scientific_name || "",
+      synonyms: approvedFields.synonyms || request.synonyms || undefined,
       family: approvedFields.family || undefined,
       genus: approvedFields.genus || undefined,
       ordo: approvedFields.ordo || undefined,
@@ -207,6 +215,13 @@ export const animalRequestService = {
       habitats: approvedFields.habitats || [],
       contributed_by: request.user_id, // Attributed contribution here atomically
     };
+
+    // Resolve tag names to UUIDs (tags from the form are names like "Reptile", not UUIDs)
+    if (animalInput.tags && animalInput.tags.length > 0) {
+      const { tagRepo } = await import("@/repositories/tag.repo");
+      const dbTags = await tagRepo.findOrCreate(animalInput.tags);
+      animalInput.tags = dbTags.map((t: { id: string }) => t.id);
+    }
 
     const animal = await animalRepo.createWithRelations(animalInput);
 

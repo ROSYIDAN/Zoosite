@@ -49,6 +49,7 @@ export function useRequestAnimalForm() {
       social_structure: "",
       conservation_status: "",
       predators: "",
+      synonyms: "",
     },
   });
 
@@ -88,6 +89,7 @@ export function useRequestAnimalForm() {
           setValue("social_structure", data.social_structure || "");
           setValue("conservation_status", data.conservation_status || "");
           setValue("predators", data.predators || "");
+          setValue("synonyms", data.synonyms || "");
 
           localStorage.removeItem("resubmit_animal_request");
           toast.success("Loaded your previous request. Please fix any errors and submit!");

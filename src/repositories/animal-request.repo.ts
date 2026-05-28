@@ -24,6 +24,7 @@ const requestDetailSelect = {
   image_url: true,
   image_public_id: true,
   scientific_name: true,
+  synonyms: true,
   family: true,
   genus: true,
   ordo: true,
@@ -143,6 +144,7 @@ export const animalRequestRepo = {
         image_url: input.image_url || null,
         image_public_id: input.image_public_id || null,
         scientific_name: input.scientific_name || null,
+        synonyms: input.synonyms || null,
         family: input.family || null,
         genus: input.genus || null,
         ordo: input.ordo || null,
@@ -178,6 +180,7 @@ export const animalRequestRepo = {
         image_url: input.image_url,
         image_public_id: input.image_public_id,
         scientific_name: input.scientific_name,
+        synonyms: input.synonyms,
         family: input.family,
         genus: input.genus,
         ordo: input.ordo,
@@ -256,6 +259,20 @@ export const animalRequestRepo = {
     } catch {
       return false;
     }
+  },
+
+  /**
+   * Unlocks a request by changing its status back to PENDING.
+   */
+  async unlock(id: string) {
+    return prisma.animal_requests.update({
+      where: { id },
+      data: {
+        status: "PENDING",
+        review_started: null,
+      },
+      select: { id: true },
+    });
   },
 
   /**

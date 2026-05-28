@@ -27,6 +27,10 @@ export async function PATCH(
         await animalRequestService.lockRequest(id);
         return NextResponse.json({ message: "Request locked for review" });
       }
+      case "UNLOCK": {
+        await animalRequestService.unlockRequest(id);
+        return NextResponse.json({ message: "Request unlocked successfully" });
+      }
       case "REJECT": {
         const { reject_reason } = body;
         if (!reject_reason) {

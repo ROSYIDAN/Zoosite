@@ -30,6 +30,7 @@ model animals {
   class_id             String?                @db.Uuid
   animal_name          String?
   scientific_name      String?
+  synonyms             String?
   animal_descriptions  animal_descriptions[]
   animal_distributions animal_distributions[]
   animal_environment   animal_environment[]
@@ -40,6 +41,8 @@ model animals {
   contributed_by       String?                @db.Uuid
   contributor          User?                  @relation("contributed_animals", fields: [contributed_by], references: [id], onDelete: SetNull)
   animal_requests      animal_requests[]
+
+  is_visible           Boolean                @default(true)
 
   @@index([family, genus, ordo, class_id], map: "idx_animals_taxonomy")
 }
@@ -289,6 +292,7 @@ model animal_requests {
 
   // ── Full Detail Fields (Optional for Quick) ──
   scientific_name     String?       @db.VarChar(255)
+  synonyms            String?       @db.Text
   family              String?       @db.VarChar(255)
   genus               String?       @db.VarChar(255)
   ordo                String?       @db.VarChar(255)

@@ -12,6 +12,9 @@ import {
 } from "@/components/animal_details";
 import FavoriteButton from "@/components/features/favorites/FavoriteButton";
 import { getAnimalBySlug, mapAnimalToData, getCommonName } from "@/lib/actions";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
+import { UserRole } from "@prisma/client";
 
 export default async function AnimalDetailPage({
   params,
@@ -26,8 +29,44 @@ export default async function AnimalDetailPage({
     notFound();
   }
 
+  // Security Guard: Hidden animals can only be viewed by administrators
+  if (!animal.is_visible) {
+    const session = await auth();
+    if (session?.user?.role !== UserRole.ADMIN) {
+      notFound();
+    }
+  }
+
   const commonName = getCommonName(animal);
   const animalData = mapAnimalToData(animal);
+
+  // Resolve matching animal slugs for predators that exist in the database
+  const predatorNames = animalData.stats?.predators || [];
+  const matchingAnimals = predatorNames.length > 0
+    ? await prisma.animals.findMany({
+        where: {
+          animal_name: {
+            in: predatorNames,
+            mode: "insensitive",
+          },
+          canonical_slug: { not: null },
+        },
+        select: {
+          animal_name: true,
+          canonical_slug: true,
+        },
+      })
+    : [];
+
+  const resolvedPredators = predatorNames.map(name => {
+    const match = matchingAnimals.find(
+      a => a.animal_name?.toLowerCase() === name.toLowerCase()
+    );
+    return {
+      name,
+      slug: match?.canonical_slug || null,
+    };
+  });
 
   return (
     <div className="py-12 px-6 max-w-[1440px] mx-auto">
@@ -74,7 +113,7 @@ export default async function AnimalDetailPage({
             <AnimalStatsGrid stats={animalData.stats} section="details" />
             <AnimalHabitats habitats={animalData.habitats} />
             <AnimalDistribution distribution={animalData.distribution} />
-            <AnimalPredators predators={animalData.stats?.predators || []} />
+            <AnimalPredators predators={resolvedPredators} currentAnimalName={commonName} />
           </div>
         </AutoPagination>
       </div>

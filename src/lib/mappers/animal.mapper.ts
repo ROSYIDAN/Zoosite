@@ -10,6 +10,7 @@ type RawAnimalDetail = {
   family: string | null;
   genus: string | null;
   ordo: string | null;
+  is_visible?: boolean;
   animal_images: { image_url: string | null }[];
   animal_descriptions: {
     summary: string;
@@ -51,6 +52,7 @@ type RawAnimalListItem = {
   genus: string | null;
   ordo: string | null;
   created_at: Date | null;
+  is_visible?: boolean;
   animal_images: { image_url: string | null }[];
 };
 
@@ -76,6 +78,7 @@ export function toAnimalDetail(raw: RawAnimalDetail) {
     slug: raw.canonical_slug,
     name: raw.animal_name,
     scientific_name: raw.scientific_name,
+    is_visible: raw.is_visible ?? true,
 
     taxonomy: {
       family: raw.family,
@@ -136,6 +139,7 @@ export function toAnimalListItem(raw: RawAnimalListItem) {
     scientific_name: raw.scientific_name,
     family: raw.family,
     image: imgbbUrl || buildLocalImageUrl(raw.canonical_slug),
+    is_visible: raw.is_visible ?? true,
   };
 }
 

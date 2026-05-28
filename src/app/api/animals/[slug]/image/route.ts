@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { animalService } from "@/services/animal.service";
+import path from "path";
+import fs from "fs/promises";
 
 /**
  * GET /api/animals/[slug]/image
@@ -9,20 +11,12 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
-  const { slug } = await params;
-
-  // Get animal ID from slug via the service layer
-  let animalId: string;
   try {
-    animalId = await animalService.getIdBySlug(slug);
-  } catch {
-    return NextResponse.json(
-      { error: "Animal not found" },
-      { status: 404 }
-    );
-  }
+    const { slug } = await params;
 
-  try {
+    // Get animal ID from slug via the service layer
+    const animalId = await animalService.getIdBySlug(slug);
+
     let imgbbUrl = await animalService.getImgbbUrl(animalId);
     
     // Substitute domain to match user preferred format
@@ -33,10 +27,7 @@ export async function GET(
     // Proxy the image
     const response = await fetch(imgbbUrl);
     if (!response.ok) {
-      return NextResponse.json(
-        { error: `Failed to fetch image from ImgBB: ${response.statusText}` },
-        { status: 500 }
-      );
+      throw new Error(`Failed to fetch image from source: ${response.statusText}`);
     }
 
     const blob = await response.blob();
@@ -49,10 +40,23 @@ export async function GET(
       },
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { error: `Failed to resolve ImgBB image: ${error.message}` },
-      { status: 500 }
-    );
+    console.error(`[IMAGE_PROXY_ERROR] Serving fallback for slug:`, error.message);
+    try {
+      const fallbackPath = path.join(process.cwd(), "public", "static_image.png");
+      const fallbackBuffer = await fs.readFile(fallbackPath);
+      return new NextResponse(fallbackBuffer, {
+        headers: {
+          "Content-Type": "image/png",
+          "Cache-Control": "public, max-age=3600",
+        },
+      });
+    } catch (fallbackError: any) {
+      console.error("[FATAL_FALLBACK_ERROR] Fallback image missing:", fallbackError.message);
+      return NextResponse.json(
+        { error: "Image not found" },
+        { status: 404 }
+      );
+    }
   }
 }
 

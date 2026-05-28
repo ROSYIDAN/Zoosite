@@ -19,6 +19,7 @@ export default function AnimalImage({ imageUrl, altText, source }: AnimalImagePr
         src={parsed.url || ""}
         fallbackSrc="/static_image.png"
         alt={altText}
+        priority={true}
         className="w-full h-full rounded-3xl"
         containerClassName="w-full max-w-[584px] aspect-[584/452] rounded-3xl overflow-hidden shadow-2xl"
         style={{

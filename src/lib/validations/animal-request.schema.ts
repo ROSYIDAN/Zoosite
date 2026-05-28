@@ -8,6 +8,7 @@ export const requestAnimalSchema = z.object({
 
   // ── Optional for QUICK, but used for FULL_DETAIL ──
   scientific_name: z.string().optional().nullable(),
+  synonyms: z.string().optional().nullable(),
   family: z.string().optional().nullable(),
   genus: z.string().optional().nullable(),
   ordo: z.string().optional().nullable(),

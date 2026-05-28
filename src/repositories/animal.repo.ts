@@ -62,10 +62,12 @@ const animalListSelect = {
   canonical_slug: true,
   animal_name: true,
   scientific_name: true,
+  synonyms: true,
   family: true,
   genus: true,
   ordo: true,
   created_at: true,
+  is_visible: true,
   animal_images: {
     select: { image_url: true },
   },
@@ -79,10 +81,12 @@ const animalDetailSelect = {
   canonical_slug: true,
   animal_name: true,
   scientific_name: true,
+  synonyms: true,
   family: true,
   genus: true,
   ordo: true,
   class_id: true,
+  is_visible: true,
   animal_images: {
     select: { image_url: true, source: true },
   },
@@ -134,14 +138,15 @@ export const animalRepo = {
   /**
    * List animals with optional diet filter and pagination.
    */
-  async findMany(query: ListAnimalsQuery) {
+  async findMany(query: ListAnimalsQuery & { includeHidden?: boolean }) {
     const {
       limit = 10,
       page = 1,
       diet,
       search,
       sort = "created_at",
-      order = "desc"
+      order = "desc",
+      includeHidden = false
     } = query;
     const skip = (page - 1) * limit;
 
@@ -166,8 +171,13 @@ export const animalRepo = {
         OR: [
           { animal_name: { contains: search, mode: "insensitive" } },
           { scientific_name: { contains: search, mode: "insensitive" } },
+          { synonyms: { contains: search, mode: "insensitive" } },
         ],
       });
+    }
+
+    if (!includeHidden) {
+      andConditions.push({ is_visible: true });
     }
 
     if (andConditions.length > 0) {
@@ -189,8 +199,8 @@ export const animalRepo = {
   /**
    * Count animals matching the given filters (for pagination meta).
    */
-  async count(query: ListAnimalsQuery) {
-    const { diet, search } = query;
+  async count(query: ListAnimalsQuery & { includeHidden?: boolean }) {
+    const { diet, search, includeHidden = false } = query;
 
     let where: Prisma.animalsWhereInput = {};
     const andConditions: Prisma.animalsWhereInput[] = [];
@@ -213,8 +223,13 @@ export const animalRepo = {
         OR: [
           { animal_name: { contains: search, mode: "insensitive" } },
           { scientific_name: { contains: search, mode: "insensitive" } },
+          { synonyms: { contains: search, mode: "insensitive" } },
         ],
       });
+    }
+
+    if (!includeHidden) {
+      andConditions.push({ is_visible: true });
     }
 
     if (andConditions.length > 0) {
@@ -267,6 +282,7 @@ export const animalRepo = {
         data: {
           animal_name: input.name,
           scientific_name: input.scientific_name,
+          synonyms: input.synonyms || null,
           family: input.family || null,
           genus: input.genus || null,
           ordo: input.diet || null,
@@ -360,6 +376,7 @@ export const animalRepo = {
         data: {
           animal_name: input.name,
           scientific_name: input.scientific_name,
+          synonyms: input.synonyms || null,
           family: input.family || null,
           genus: input.genus || null,
           ordo: input.diet || null,
