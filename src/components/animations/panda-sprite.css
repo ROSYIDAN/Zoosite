@@ -1,0 +1,92 @@
+/* ============================================
+   Panda Sprite Sheet Animation
+   Sheet: 1254 x 1254px — 4 frames horizontal
+   Frame: ~313.5px each (we use exact total)
+   ============================================ */
+
+.panda-wrapper {
+  display: inline-block;
+}
+
+.panda-wrapper--float {
+  animation: floaty 3s ease-in-out infinite;
+}
+
+.panda-sprite {
+  /* Frame dimensions — scaled via CSS custom properties */
+  --sprite-size: 256px;
+
+  width: var(--sprite-size);
+  height: var(--sprite-size);
+
+  background-image: url("/sprites/panda-idle.png");
+  background-repeat: no-repeat;
+
+  /*
+   * Scale the full sheet (1254px wide) proportionally.
+   * 4 frames wide → background-width = 4 × sprite-size
+   * Height = 1:1 ratio per frame → background-height = sprite-size
+   */
+  background-size: calc(var(--sprite-size) * 4) var(--sprite-size);
+
+  /* Crisp pixel art rendering */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+
+  /* Sprite frame animation — 4 frames */
+  animation: pandaIdle var(--sprite-speed, 1s) steps(4) infinite;
+}
+
+/* Size variants */
+.panda-sprite--sm {
+  --sprite-size: 128px;
+}
+
+.panda-sprite--md {
+  --sprite-size: 192px;
+}
+
+.panda-sprite--lg {
+  --sprite-size: 256px;
+}
+
+.panda-sprite--xl {
+  --sprite-size: 384px;
+}
+
+/* Speed variants */
+.panda-sprite--slow {
+  --sprite-speed: 1.6s;
+}
+
+.panda-sprite--normal {
+  --sprite-speed: 1s;
+}
+
+.panda-sprite--fast {
+  --sprite-speed: 0.5s;
+}
+
+/* ---- Keyframes ---- */
+
+@keyframes pandaIdle {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    /* Shift left by the full sheet width (4 frames) */
+    background-position: calc(var(--sprite-size) * -4) 0;
+  }
+}
+
+@keyframes floaty {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

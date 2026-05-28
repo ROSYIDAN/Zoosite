@@ -1,0 +1,326 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model animal_descriptions {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id  String    @db.Uuid
+  summary    String
+  source     String?   @default("wikipedia")
+  source_url String?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  animals    animals   @relation(fields: [animal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([animal_id, source])
+}
+
+model animals {
+  id                   String                 @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  canonical_slug       String?                @unique
+  family               String?
+  created_at           DateTime?              @default(now()) @db.Timestamp(6)
+  genus                String?
+  ordo                 String?
+  class_id             String?                @db.Uuid
+  animal_name          String?
+  scientific_name      String?
+  animal_descriptions  animal_descriptions[]
+  animal_distributions animal_distributions[]
+  animal_environment   animal_environment[]
+  animal_images        animal_images[]
+  dataset_animals      dataset_animals[]
+  tags                 tags[]
+
+  contributed_by       String?                @db.Uuid
+  contributor          User?                  @relation("contributed_animals", fields: [contributed_by], references: [id], onDelete: SetNull)
+  animal_requests      animal_requests[]
+
+  @@index([family, genus, ordo, class_id], map: "idx_animals_taxonomy")
+}
+
+model dataset_animals {
+  animal_name         String?
+  height_cm           String?
+  weight_kg           String?
+  color               String?
+  lifespan_years      String?
+  diet                String?
+  habitat             String?
+  predators           String?
+  avg_speed_kmh       String?
+  countries_found     String?
+  conservation_status String?
+  family              String?
+  gestation_days      String?
+  top_speed_kmh       String?
+  social_structure    String?
+  offspring_per_birth String?
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id           String?  @db.Uuid
+  animals             animals? @relation(fields: [animal_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_dataset_animals_animal")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model audit_logs {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  table_name String
+  record_id  String?   @db.Uuid
+  action     String
+  old_data   Json?
+  new_data   Json?
+  changed_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model animal_distributions {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id  String?    @db.Uuid
+  created_at DateTime?  @default(now()) @db.Date
+  country_id String?    @db.Uuid
+  animals    animals?   @relation(fields: [animal_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_animal_dist_animal")
+  countries  countries? @relation(fields: [country_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_animal_dist_country")
+}
+
+model animal_environment {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  animal_id  String?   @db.Uuid
+  created_at DateTime? @default(now()) @db.Date
+  habitat_id String?   @db.Uuid
+  animals    animals?  @relation(fields: [animal_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_animal_env_animal")
+  habitat    habitat?  @relation(fields: [habitat_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_animal_env_habitat")
+}
+
+model countries {
+  id                   String                 @id(map: "country_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  region_id            String?                @db.Uuid
+  country              String
+  created_at           DateTime?              @default(dbgenerated("CURRENT_DATE")) @db.Date
+  country_flag         String?
+  animal_distributions animal_distributions[]
+  regions              regions?               @relation(fields: [region_id], references: [id], onUpdate: NoAction, map: "fk_countries_region")
+}
+
+model regions {
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  region     String?
+  created_at DateTime?   @default(now()) @db.Timestamp(6)
+  imageurl   String?
+  countries  countries[]
+}
+
+model group_habitats {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category   String?
+  created_at DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+}
+
+model habitat {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  habitat_name       String?
+  created_at         DateTime?            @default(now()) @db.Timestamp(6)
+  group_id           String?              @db.Uuid
+  animal_environment animal_environment[]
+}
+
+model animal_class {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String    @unique
+  created_at DateTime? @db.Date
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model tempdata {
+  id        String? @db.Uuid
+  image_url String?
+
+  @@ignore
+}
+
+model animal_images {
+  animal_id String?  @db.Uuid
+  id        String   @id(map: "animals_image_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  image_url String?
+  source    String?
+  animals   animals? @relation(fields: [animal_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_animals_image_animal")
+}
+
+// ── Quiz Feature ──
+
+enum QuizLevel {
+  EASY
+  NORMAL
+  HARD
+}
+
+enum QuizPattern {
+  SINGLE_PICK_LIST
+  MULTI_PICK_GRID
+  IMAGE_RECOGNITION
+  TRUE_FALSE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id                   String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String?
+  email                String            @unique
+  emailVerified        DateTime?         @map("email_verified") @db.Timestamp(6)
+  image                String?
+  role                 UserRole          @default(USER)
+  createdAt            DateTime          @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt            DateTime          @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt            DateTime?         @map("deleted_at") @db.Timestamp(6)
+  is_request_banned    Boolean           @default(false)
+  request_banned_until DateTime?         @map("request_banned_until") @db.Timestamp(6)
+
+  accounts      Account[]
+  sessions      Session[]
+  requests      animal_requests[]
+  contributions animals[]         @relation("contributed_animals")
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String  @map("user_id") @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id") @db.Uuid
+  expires      DateTime @db.Timestamp(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime @db.Timestamp(6)
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model quiz_questions {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  prompt       String
+  level        QuizLevel
+  pattern      QuizPattern
+  reference_id String?     @db.Uuid
+  media_url    String?
+  created_at   DateTime    @default(now()) @db.Timestamp(6)
+
+  options      quiz_options[]
+}
+
+model quiz_options {
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  question_id String         @db.Uuid
+  label       String
+  is_correct  Boolean        @default(false)
+  media_url   String?
+
+  question    quiz_questions @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+  @@index([question_id])
+}
+
+model tags {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String    @unique
+  slug       String    @unique
+  color      String?   // Optional hex color for the tag badge
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  animals    animals[]
+}
+
+enum RequestType {
+  QUICK
+  FULL_DETAIL
+}
+
+enum RequestStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model animal_requests {
+  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  request_type        RequestType
+  status              RequestStatus @default(PENDING)
+
+  // ── Required Fields (Both Quick and Full) ──
+  animal_name         String        @db.VarChar(255)
+  image_url           String?       @db.Text
+  image_public_id     String?       @db.VarChar(255) // For Cloudinary deletion
+
+  // ── Full Detail Fields (Optional for Quick) ──
+  scientific_name     String?       @db.VarChar(255)
+  family              String?       @db.VarChar(255)
+  genus               String?       @db.VarChar(255)
+  ordo                String?       @db.VarChar(255)
+  class_id            String?       @db.Uuid
+  description         String?       @db.Text
+  description_source  String?       @db.VarChar(255)
+  diet                String?       @db.VarChar(255)
+  lifespan_years      String?       @db.VarChar(100)
+  weight_kg           String?       @db.VarChar(100)
+  height_cm           String?       @db.VarChar(100)
+  avg_speed_kmh       String?       @db.VarChar(100)
+  top_speed_kmh       String?       @db.VarChar(100)
+  social_structure    String?       @db.VarChar(255)
+  conservation_status String?       @db.VarChar(100)
+  predators           String?       @db.Text
+  tags                String[]      // Array of tag names or IDs
+  countries           String[]      // Array of country IDs
+  habitats            String[]      // Array of habitat IDs
+
+  // ── Concurrency & Admin tracking ──
+  review_started      DateTime?     @db.Timestamp(6)
+  reject_reason       String?       @db.Text
+  approved_animal_id  String?       @db.Uuid
+  approved_animal     animals?      @relation(fields: [approved_animal_id], references: [id], onDelete: SetNull)
+
+  // ── Requester link ──
+  user_id             String        @db.Uuid
+  user                User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  created_at          DateTime      @default(now()) @db.Timestamp(6)
+  updated_at          DateTime      @updatedAt @db.Timestamp(6)
+
+  @@index([status])
+  @@index([user_id])
+}

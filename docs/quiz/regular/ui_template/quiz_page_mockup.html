@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Play - Full Page Flow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@400,1,0,24" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['"Noto Serif"', 'serif'],
+                        'sans': ['"Manrope"', 'sans-serif'],
+                    },
+                    colors: {
+                        'zoo-dark': '#0c0f0d',
+                        'zoo-green': '#1a4d2e',
+                        'zoo-gold': '#FCD34D',
+                        'glass-border': 'rgba(255,255,255,0.1)',
+                        'glass-bg': 'rgba(255,255,255,0.06)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            /* Deep jungle gradient */
+            background: linear-gradient(135deg, #0c0f0d 0%, #1a4d2e 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Silhouette effect for Image Recognition */
+        .silhouette {
+            filter: brightness(0);
+            transition: filter 0.6s ease;
+        }
+
+        .shimmer-hover:hover {
+            transform: scale(1.05);
+        }
+
+        .shimmer-hover {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .shimmer-hover::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.5s ease;
+        }
+
+        .shimmer-hover:hover::after {
+            left: 150%;
+        }
+        
+        /* Animations */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col font-sans relative overflow-x-hidden">
+
+    <!-- ========================================== -->
+    <!-- COMPONENT: Top Navigation Bar              -->
+    <!-- ========================================== -->
+    <header class="sticky top-0 w-full glass-panel border-x-0 border-t-0 rounded-none z-50 px-6 py-4 flex justify-between items-center">
+        <!-- Back Button -->
+        <button class="flex items-center gap-2 text-white/80 hover:text-white transition-colors">
+            <span class="material-symbols-outlined">arrow_back</span>
+            <span class="font-semibold hidden sm:inline">Back</span>
+        </button>
+
+        <!-- Current Progress Label -->
+        <div class="font-serif text-lg tracking-wide text-zoo-gold">
+            Question 1 of 3
+        </div>
+
+        <!-- Quit Button (triggers slide-down banner in real app) -->
+        <button class="text-white/60 hover:text-red-400 transition-colors p-2" title="Quit Quiz">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- COMPONENT: Progress Bar                    -->
+    <!-- ========================================== -->
+    <div class="w-full h-1.5 bg-black/40">
+        <div class="h-full bg-zoo-gold transition-all duration-500 ease-out" style="width: 33%"></div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- COMPONENT: Main Quiz Layout Wrapper        -->
+    <!-- ========================================== -->
+    <main class="flex-grow flex flex-col items-center justify-center p-6 w-full max-w-3xl mx-auto z-10">
+
+        <!-- ============================================================== -->
+        <!-- COMPONENT VARIANT 1: SINGLE_PICK_LIST (Visible for mockup)   -->
+        <!-- ============================================================== -->
+        <div class="w-full flex flex-col gap-8 mb-8" id="variant-single-pick">
+            
+            <h1 class="font-serif text-3xl md:text-4xl text-center leading-tight">
+                Which of these animals is a Mammal?
+            </h1>
+
+            <div class="flex flex-col gap-3">
+                <!-- Option: Normal State -->
+                <button class="glass-panel w-full flex items-center p-4 hover:bg-white/10 transition-colors group text-left">
+                    <div class="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center mr-4 group-hover:border-white/60 transition-colors shrink-0">
+                        <span class="text-sm font-semibold text-white/70 group-hover:text-white">A</span>
+                    </div>
+                    <span class="text-lg">Great White Shark</span>
+                </button>
+
+                <!-- Option: Correct Pick State (Revealed) -->
+                <button class="glass-panel w-full flex items-center p-4 bg-green-500/20 border-green-400 text-left">
+                    <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center mr-4 shrink-0 shadow-[0_0_15px_rgba(34,197,94,0.5)]">
+                        <span class="material-symbols-outlined text-white text-sm">check</span>
+                    </div>
+                    <span class="text-lg font-semibold text-green-300">Lion</span>
+                </button>
+
+                <!-- Option: Wrong Pick State (Revealed - Example animate-shake) -->
+                <!-- <button class="glass-panel w-full flex items-center p-4 bg-red-500/20 border-red-400 text-left animate-shake">
+                    <div class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center mr-4 shrink-0">
+                        <span class="material-symbols-outlined text-white text-sm">close</span>
+                    </div>
+                    <span class="text-lg font-semibold text-red-300">Bald Eagle</span>
+                </button> -->
+
+                <!-- Option: Unselected/Muted State (Revealed) -->
+                <button class="glass-panel w-full flex items-center p-4 opacity-50 cursor-default text-left">
+                    <div class="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center mr-4 shrink-0">
+                        <span class="text-sm text-white/40">C</span>
+                    </div>
+                    <span class="text-lg text-white/50">Bald Eagle</span>
+                </button>
+            </div>
+        </div>
+
+
+        <!-- ============================================================== -->
+        <!-- COMPONENT VARIANT 2: MULTI_PICK_GRID (Hidden in this mockup)   -->
+        <!-- Un-comment the 'hidden' class to preview                     -->
+        <!-- ============================================================== -->
+        <div class="w-full flex flex-col gap-6 mb-8 hidden" id="variant-multi-pick">
+            <div class="text-center">
+                <h1 class="font-serif text-3xl md:text-4xl leading-tight mb-2">
+                    Select all animals that can Fly.
+                </h1>
+                <p class="text-white/60">Select all that apply</p>
+            </div>
+
+            <!-- Grid container -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                
+                <!-- Card: Selected state (Before Submit) -->
+                <button class="glass-panel aspect-square relative flex flex-col items-center justify-center overflow-hidden border-2 border-zoo-gold scale-105 shadow-[0_0_20px_rgba(252,211,77,0.3)]">
+                    <span class="material-symbols-outlined text-6xl text-white/80 mb-2">flutter_dash</span>
+                    <span class="font-semibold text-lg">Eagle</span>
+                </button>
+
+                <!-- Card: Correctly Guessed (After Submit) -->
+                <button class="glass-panel aspect-square relative flex flex-col items-center justify-center overflow-hidden border-2 border-green-500 bg-green-500/10">
+                    <div class="absolute top-3 right-3 bg-green-500 rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+                        <span class="material-symbols-outlined text-[16px] text-white">check</span>
+                    </div>
+                    <span class="material-symbols-outlined text-6xl text-white/80 mb-2">cruelty_free</span>
+                    <span class="font-semibold text-lg">Bat</span>
+                </button>
+
+                <!-- Card: Wrong Guess (After Submit) -->
+                <button class="glass-panel aspect-square relative flex flex-col items-center justify-center overflow-hidden border-2 border-red-500 bg-red-500/10 opacity-80">
+                    <div class="absolute top-3 right-3 bg-red-500 rounded-full w-6 h-6 flex items-center justify-center shadow-lg">
+                        <span class="material-symbols-outlined text-[16px] text-white">close</span>
+                    </div>
+                    <span class="material-symbols-outlined text-6xl text-white/80 mb-2">pets</span>
+                    <span class="font-semibold text-lg">Lion</span>
+                </button>
+
+                 <!-- Card: Missed Correct Answer (After Submit) -->
+                 <button class="glass-panel aspect-square relative flex flex-col items-center justify-center overflow-hidden border-2 border-dashed border-green-500 bg-black/20 opacity-70">
+                    <div class="absolute top-3 right-3 border-2 border-green-500 rounded-full w-6 h-6 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[16px] text-green-500">check</span>
+                    </div>
+                    <span class="material-symbols-outlined text-6xl text-white/80 mb-2">earlybirds</span>
+                    <span class="font-semibold text-lg">Sparrow</span>
+                </button>
+
+                <!-- Normal default card -->
+                <button class="glass-panel aspect-square relative flex flex-col items-center justify-center overflow-hidden hover:bg-white/10 transition-colors">
+                    <span class="material-symbols-outlined text-6xl text-white/80 mb-2">bug_report</span>
+                    <span class="font-semibold text-lg">Elephant</span>
+                </button>
+            </div>
+
+            <!-- Submit Answer Button for Multi-Pick -->
+            <div class="flex justify-center mt-4">
+                <button class="px-8 py-3 rounded-full bg-white/10 border border-white/20 text-white font-semibold hover:bg-white/20 transition-colors cursor-not-allowed opacity-50" disabled>
+                    Submit Answer
+                </button>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- COMPONENT VARIANT 3: SILHOUETTE (Hidden in this mockup)        -->
+        <!-- Un-comment the 'hidden' class to preview                     -->
+        <!-- ============================================================== -->
+        <div class="w-full flex flex-col gap-6 mb-8 hidden" id="variant-silhouette">
+            <h1 class="font-serif text-3xl md:text-4xl text-center leading-tight">
+                Identify this animal by its silhouette.
+            </h1>
+
+            <div class="glass-panel w-full aspect-[16/9] sm:aspect-[21/9] flex items-center justify-center overflow-hidden relative border-white/5">
+                <!-- Using a placeholder image with the silhouette class -->
+                <img src="https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?q=80&w=800&auto=format&fit=crop" 
+                     alt="Animal Silhouette" 
+                     class="w-full h-full object-cover object-center silhouette">
+                <div class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-xs text-white/50">
+                    Image Recognition
+                </div>
+            </div>
+
+            <!-- Single Pick Options for Silhouette -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                <button class="glass-panel w-full flex items-center p-4 hover:bg-white/10 transition-colors group text-left">
+                    <span class="text-lg">Hippopotamus</span>
+                </button>
+                <button class="glass-panel w-full flex items-center p-4 hover:bg-white/10 transition-colors group text-left">
+                    <span class="text-lg">Elephant</span>
+                </button>
+                <button class="glass-panel w-full flex items-center p-4 hover:bg-white/10 transition-colors group text-left">
+                    <span class="text-lg">Rhinoceros</span>
+                </button>
+                <button class="glass-panel w-full flex items-center p-4 hover:bg-white/10 transition-colors group text-left">
+                    <span class="text-lg">Water Buffalo</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- COMPONENT: Bottom Action Area              -->
+        <!-- ========================================== -->
+        <div class="w-full flex justify-center mt-4">
+            <button class="bg-zoo-gold text-black font-bold text-lg px-10 py-4 rounded-full shimmer-hover shadow-[0_10px_30px_rgba(252,211,77,0.3)] flex items-center gap-2">
+                Next Question
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Script to toggle views for demonstration purposes -->
+    <script>
+        // Simple demonstrator script. In a real React app, these would be separate rendered components.
+        console.log("Mockup loaded. To preview other question types, remove the 'hidden' class from #variant-multi-pick or #variant-silhouette");
+    </script>
+</body>
+</html>

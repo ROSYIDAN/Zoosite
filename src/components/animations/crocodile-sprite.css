@@ -1,0 +1,56 @@
+/* ============================================
+   Crocodile Sprite Sheet Animation
+   Sheet: 1024 x 1024px — 4 frames horizontal
+   Frame: 256px each
+   ============================================ */
+
+.crocodile-wrapper {
+  display: inline-block;
+}
+
+.crocodile-wrapper--float {
+  animation: floaty 3s ease-in-out infinite;
+}
+
+.crocodile-sprite {
+  --sprite-size: 256px;
+
+  width: var(--sprite-size);
+  height: var(--sprite-size);
+
+  background-image: url("/sprites/crocodile-idle.png");
+  background-repeat: no-repeat;
+
+  /* 
+   * Each frame is 256px wide in the 1024px sheet.
+   * Total width is 4x the frame width.
+   */
+  background-size: calc(var(--sprite-size) * 4) var(--sprite-size);
+
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+
+  animation: crocodileIdle var(--sprite-speed, 1s) steps(4) infinite;
+}
+
+/* Size variants */
+.crocodile-sprite--sm { --sprite-size: 128px; }
+.crocodile-sprite--md { --sprite-size: 192px; }
+.crocodile-sprite--lg { --sprite-size: 256px; }
+.crocodile-sprite--xl { --sprite-size: 384px; }
+
+/* Speed variants */
+.crocodile-sprite--slow { --sprite-speed: 1.6s; }
+.crocodile-sprite--normal { --sprite-speed: 1s; }
+.crocodile-sprite--fast { --sprite-speed: 0.5s; }
+
+@keyframes crocodileIdle {
+  from { background-position: 0 0; }
+  to { background-position: calc(var(--sprite-size) * -4) 0; }
+}
+
+@keyframes floaty {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
