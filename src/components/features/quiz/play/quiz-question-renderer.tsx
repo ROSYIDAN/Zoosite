@@ -14,6 +14,7 @@ interface QuizQuestionRendererProps {
   onSingleSelect: (id: string) => void;
   onMultiToggle: (id: string) => void;
   onMultiSubmit: () => void;
+  timedOut?: boolean;
 }
 
 export function QuizQuestionRenderer({
@@ -24,6 +25,7 @@ export function QuizQuestionRenderer({
   onSingleSelect,
   onMultiToggle,
   onMultiSubmit,
+  timedOut,
 }: QuizQuestionRendererProps) {
   return (
     <div className="flex-grow w-full flex items-center justify-center min-h-0">
@@ -44,6 +46,7 @@ export function QuizQuestionRenderer({
               isAnswered={isAnswered}
               selectedOptionId={singleSelectedId}
               onSelect={onSingleSelect}
+              timedOut={timedOut}
             />
           )}
 
@@ -55,6 +58,7 @@ export function QuizQuestionRenderer({
               selectedOptionIds={multiSelectedIds}
               onToggleSelect={onMultiToggle}
               onSubmit={onMultiSubmit}
+              timedOut={timedOut}
             />
           )}
 
@@ -78,6 +82,7 @@ export function QuizQuestionRenderer({
               isAnswered={isAnswered}
               selectedOptionId={singleSelectedId}
               onSelect={onSingleSelect}
+              timedOut={timedOut}
             />
           )}
         </motion.div>

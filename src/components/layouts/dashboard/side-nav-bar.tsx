@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 import { useSidebar } from "@/hooks/use-sidebar";
+import { useQuizStore } from "@/store/quiz.store";
 
 import { useSession, signOut } from "next-auth/react";
 import { UserRole } from "@prisma/client";
@@ -17,6 +19,15 @@ export default function SideNavBar() {
   const { isSidebarVisible, toggleSidebar } = useSidebar();
   const pathname = usePathname();
   const { data: session } = useSession();
+  
+  const { completedLevels } = useQuizStore();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const isUnlocked = isMounted && completedLevels.includes("hard");
 
   return (
     <aside
@@ -46,8 +57,17 @@ export default function SideNavBar() {
         {session?.user && (
           <div className="mt-4 pt-4 border-t border-[#1a1c19]/5">
             <p className="px-6 mb-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Contributions</p>
-            <SideNavItem href="/request-animal" icon="post_add" label="Request Animal" active={pathname === "/request-animal"} />
-            <SideNavItem href="/my-requests" icon="history" label="My Requests" active={pathname === "/my-requests"} />
+            {isUnlocked ? (
+              <>
+                <SideNavItem href="/request-animal" icon="post_add" label="Request Animal" active={pathname === "/request-animal"} />
+                <SideNavItem href="/my-requests" icon="history" label="My Requests" active={pathname === "/my-requests"} />
+              </>
+            ) : (
+              <>
+                <SideNavItem href="/request-animal" icon="help_outline" label="Mystery Submission 🔒" active={pathname === "/request-animal"} />
+                <SideNavItem href="/my-requests" icon="lock" label="Mystery History 🔒" active={pathname === "/my-requests"} />
+              </>
+            )}
           </div>
         )}
         

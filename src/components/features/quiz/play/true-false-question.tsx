@@ -18,6 +18,7 @@ interface TrueFalseQuestionProps {
   isAnswered: boolean;
   selectedOptionId: string | null;
   onSelect: (optionId: string) => void;
+  timedOut?: boolean;
 }
 
 export function TrueFalseQuestion({
@@ -27,6 +28,7 @@ export function TrueFalseQuestion({
   isAnswered,
   selectedOptionId,
   onSelect,
+  timedOut,
 }: TrueFalseQuestionProps) {
   const parsedQuestionMedia = imageUrl ? parseMediaUrl(imageUrl) : null;
 
@@ -48,6 +50,8 @@ export function TrueFalseQuestion({
               alt="Question media"
               className="w-full h-full object-cover"
               style={parsedQuestionMedia.style}
+              loading="eager"
+              fetchPriority="high"
             />
           </div>
         )}
@@ -81,7 +85,10 @@ export function TrueFalseQuestion({
             // Remove the 3D button effect once answered
             stateClass = stateClass.replace(/shadow-\[.*?\]/g, "").replace(/hover:translate-y-\[.*?\]/g, "");
 
-            if (isCorrect) {
+            if (timedOut) {
+              // Time's up: keep options neutral and muted
+              stateClass = "opacity-30 cursor-default text-white border-white/10 grayscale shadow-none translate-y-0";
+            } else if (isCorrect) {
               stateClass = "bg-green-500 border-green-400 text-white shadow-[0_0_30px_rgba(34,197,94,0.4)] scale-[1.02] z-10";
             } else if (isSelected && !isCorrect) {
               stateClass = "bg-red-600 border-red-500 text-white scale-[0.98]";

@@ -14,6 +14,7 @@ const requestUserSelect = {
   image: true,
   is_request_banned: true,
   request_banned_until: true,
+  rejections_reset_at: true,
 };
 
 const requestDetailSelect = {
@@ -89,10 +90,17 @@ export const animalRequestRepo = {
    */
   async getRejectionCount(userId: string): Promise<number> {
     if (!isUuid(userId)) return 0;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { rejections_reset_at: true },
+    });
     return prisma.animal_requests.count({
       where: {
         user_id: userId,
         status: "REJECTED",
+        created_at: {
+          gt: user?.rejections_reset_at || new Date(0),
+        },
       },
     });
   },
@@ -316,6 +324,7 @@ export const animalRequestRepo = {
         id: true,
         is_request_banned: true,
         request_banned_until: true,
+        rejections_reset_at: true,
       },
     });
   },
@@ -334,6 +343,18 @@ export const animalRequestRepo = {
         request_banned_until: bannedUntil,
       },
       select: { id: true, is_request_banned: true, request_banned_until: true },
+    });
+  },
+
+  /**
+   * Resets the rejections timestamp for a user, recovering their strikes.
+   */
+  async resetRejectionsTimestamp(userId: string) {
+    if (!isUuid(userId)) return null;
+    return prisma.user.update({
+      where: { id: userId },
+      data: { rejections_reset_at: new Date() },
+      select: { id: true, rejections_reset_at: true },
     });
   },
 

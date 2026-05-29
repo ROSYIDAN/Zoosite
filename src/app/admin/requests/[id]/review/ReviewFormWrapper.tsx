@@ -1,9 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import AnimalForm from "@/components/features/admin/animals/AnimalForm";
 import type { CreateAnimalInput } from "@/lib/validations/animal.schema";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface ReviewFormWrapperProps {
   requestId: string;
@@ -70,6 +79,9 @@ export default function ReviewFormWrapper({
     }
   };
 
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+
   const handleCancelReview = async () => {
     const toastId = toast.loading("Cancelling review and releasing request lock...");
     try {
@@ -92,13 +104,79 @@ export default function ReviewFormWrapper({
     router.refresh();
   };
 
+  const handleRejectReview = async () => {
+    if (!rejectReason.trim()) {
+      toast.error("Rejection reason is required.");
+      return;
+    }
+
+    const toastId = toast.loading("Rejecting request...");
+    try {
+      const res = await fetch(`/api/admin/requests/${requestId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "REJECT", reject_reason: rejectReason }),
+      });
+
+      if (res.ok) {
+        toast.success("Request rejected successfully.", { id: toastId });
+        setIsRejectOpen(false);
+        router.push("/admin/requests");
+        router.refresh();
+      } else {
+        const json = await res.json().catch(() => ({}));
+        toast.error(json.message || "Failed to reject request.", { id: toastId });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong.", { id: toastId });
+    }
+  };
+
   return (
-    <AnimalForm
-      classes={classes}
-      initialData={initialData}
-      initialCountries={initialCountries}
-      onSubmitOverride={handleSubmitReview}
-      onCancelOverride={handleCancelReview}
-    />
+    <>
+      <AnimalForm
+        classes={classes}
+        initialData={initialData}
+        initialCountries={initialCountries}
+        onSubmitOverride={handleSubmitReview}
+        onCancelOverride={handleCancelReview}
+        onRejectOverride={() => setIsRejectOpen(true)}
+      />
+
+      <Dialog open={isRejectOpen} onOpenChange={setIsRejectOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Species Request</DialogTitle>
+            <DialogDescription>
+              Please provide feedback to the user explaining why their request is being rejected. The uploaded reference image will be permanently deleted.
+            </DialogDescription>
+          </DialogHeader>
+
+          <textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            rows={4}
+            placeholder="e.g. Please provide a clearer reference image, or double-check the scientific classification."
+            className="w-full px-4 py-2.5 border border-[#c2c9bb] rounded-xl outline-none focus:border-[#2d5a27] text-xs font-['Manrope'] bg-[#fafaf5]/50 focus:ring-1 focus:ring-[#2d5a27]/30 text-[#1a1c19]"
+          />
+
+          <DialogFooter>
+            <button
+              onClick={() => setIsRejectOpen(false)}
+              className="px-4 py-2 border border-[#c2c9bb] text-xs font-bold font-['Plus_Jakarta_Sans'] uppercase tracking-wider rounded-xl transition-all text-[#1a1c19]/60 hover:bg-[#fafaf5] cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleRejectReview}
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold font-['Plus_Jakarta_Sans'] uppercase tracking-wider rounded-xl shadow-sm transition-all cursor-pointer"
+            >
+              Reject & Purge
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

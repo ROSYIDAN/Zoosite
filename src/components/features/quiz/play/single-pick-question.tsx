@@ -20,6 +20,7 @@ interface SinglePickQuestionProps {
   isAnswered: boolean;
   selectedOptionId: string | null;
   onSelect: (optionId: string) => void;
+  timedOut?: boolean;
 }
 
 export function SinglePickQuestion({
@@ -29,6 +30,7 @@ export function SinglePickQuestion({
   isAnswered,
   selectedOptionId,
   onSelect,
+  timedOut,
 }: SinglePickQuestionProps) {
   const letters = ["A", "B", "C", "D"];
   const parsedQuestionMedia = parseMediaUrl(imageUrl);
@@ -52,6 +54,8 @@ export function SinglePickQuestion({
               alt="Question" 
               className="w-full h-full object-cover"
               style={parsedQuestionMedia.style}
+              loading="eager"
+              fetchPriority="high"
             />
           </div>
         )}
@@ -69,7 +73,11 @@ export function SinglePickQuestion({
           let isShake = false;
 
           if (isAnswered) {
-            if (isCorrect) {
+            if (timedOut) {
+              // Time's up: keep all options in neutral, non-highlighted, slightly muted state
+              stateClass = "opacity-40 cursor-default text-white/50 border-white/5";
+              badgeClass = "border-white/10 text-white/30";
+            } else if (isCorrect) {
               // Always highlight correct answer green when revealed
               stateClass = "bg-green-500/20 border-green-400 text-green-300";
               badgeClass = "bg-green-500 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]";

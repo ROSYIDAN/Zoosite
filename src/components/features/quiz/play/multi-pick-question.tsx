@@ -21,6 +21,7 @@ interface MultiPickQuestionProps {
   selectedOptionIds: string[];
   onToggleSelect: (optionId: string) => void;
   onSubmit: () => void;
+  timedOut?: boolean;
 }
 
 export function MultiPickQuestion({
@@ -30,6 +31,7 @@ export function MultiPickQuestion({
   selectedOptionIds,
   onToggleSelect,
   onSubmit,
+  timedOut,
 }: MultiPickQuestionProps) {
   const hasSelection = selectedOptionIds.length > 0;
 
@@ -63,7 +65,10 @@ export function MultiPickQuestion({
             }
           } else {
             // Answered State Reveal
-            if (isSelected && isCorrect) {
+            if (timedOut) {
+              // Time's up: keep all cards in neutral, muted, grayscale state
+              cardClass = "opacity-40 grayscale cursor-default border-transparent";
+            } else if (isSelected && isCorrect) {
               // Picked correctly
               cardClass = "border-green-500 bg-green-500/10 cursor-default";
               badge = (

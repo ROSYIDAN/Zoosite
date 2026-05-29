@@ -8,9 +8,10 @@ interface AnimalFormActionsProps {
   isValid?: boolean;
   isEditing?: boolean;
   onCancel?: () => void | Promise<void>;
+  onReject?: () => void | Promise<void>;
 }
 
-export default function AnimalFormActions({ isSubmitting, isDirty, isValid, isEditing, onCancel }: AnimalFormActionsProps) {
+export default function AnimalFormActions({ isSubmitting, isDirty, isValid, isEditing, onCancel, onReject }: AnimalFormActionsProps) {
   const router = useRouter();
 
   return (
@@ -39,6 +40,17 @@ export default function AnimalFormActions({ isSubmitting, isDirty, isValid, isEd
       >
         Cancel
       </button>
+
+      {onReject && (
+        <button
+          type="button"
+          onClick={onReject}
+          className="w-full bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 py-3.5 rounded-2xl font-bold font-['Manrope'] transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+        >
+          <span className="material-symbols-outlined text-[20px]">cancel</span>
+          Reject Request
+        </button>
+      )}
     </div>
   );
 }

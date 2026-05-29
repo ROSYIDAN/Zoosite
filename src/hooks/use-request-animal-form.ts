@@ -6,6 +6,50 @@ import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
 import { requestAnimalSchema, type RequestAnimalInput } from "@/lib/validations/animal-request.schema";
 
+const hasChanged = (newData: any, oldData: any) => {
+  const fields = [
+    "request_type",
+    "animal_name",
+    "image_url",
+    "scientific_name",
+    "family",
+    "genus",
+    "ordo",
+    "class_id",
+    "description",
+    "description_source",
+    "diet",
+    "lifespan_years",
+    "weight_kg",
+    "height_cm",
+    "avg_speed_kmh",
+    "top_speed_kmh",
+    "social_structure",
+    "conservation_status",
+    "predators",
+    "synonyms",
+  ];
+  
+  const scalarChanged = fields.some((field) => {
+    const newVal = (newData[field] ?? "").toString().trim();
+    const oldVal = (oldData[field] ?? "").toString().trim();
+    return newVal !== oldVal;
+  });
+
+  if (scalarChanged) return true;
+
+  // Array comparison for tags, countries, habitats
+  const arrayFields = ["tags", "countries", "habitats"];
+  const arrayChanged = arrayFields.some((field) => {
+    const newArr = newData[field] || [];
+    const oldArr = oldData[field] || [];
+    if (newArr.length !== oldArr.length) return true;
+    return newArr.some((val: string, index: number) => val !== oldArr[index]);
+  });
+
+  return arrayChanged;
+};
+
 export function useRequestAnimalForm() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"QUICK" | "FULL_DETAIL">("QUICK");
@@ -18,6 +62,7 @@ export function useRequestAnimalForm() {
     animal?: { canonical_slug: string; animal_name: string; scientific_name: string; family: string };
     request?: { animal_name: string; status: string };
   } | null>(null);
+  const [originalData, setOriginalData] = useState<any | null>(null);
 
   const {
     register,
@@ -69,6 +114,7 @@ export function useRequestAnimalForm() {
       if (stored) {
         try {
           const data = JSON.parse(stored);
+          setOriginalData(data);
           setActiveTab(data.request_type || "QUICK");
           setValue("animal_name", data.animal_name || "");
           setValue("image_url", data.image_url || "");
@@ -167,6 +213,15 @@ export function useRequestAnimalForm() {
       return;
     }
 
+    // Check if the user resubmitted the exact same data without making corrections
+    if (originalData) {
+      const changed = hasChanged(data, originalData);
+      if (!changed) {
+        toast.error("Please correct or modify at least one detail before resubmitting.");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     const toastId = toast.loading("Submitting your request...");
     try {
@@ -197,6 +252,8 @@ export function useRequestAnimalForm() {
     }
   };
 
+  const isUnchanged = originalData ? !hasChanged(watch(), originalData) : false;
+
   return {
     register,
     handleSubmit,
@@ -211,5 +268,6 @@ export function useRequestAnimalForm() {
     handleImageUpload,
     handleClearImage,
     onSubmit,
+    isUnchanged,
   };
 }

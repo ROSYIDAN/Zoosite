@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { QuizTopBar } from "@/components/features/quiz/shared/quiz-top-bar";
 import { QuizProgressBar } from "@/components/features/quiz/shared/quiz-progress-bar";
+import { QuizTimerBar } from "@/components/features/quiz/play/quiz-timer-bar";
 import { QuizQuestionRenderer } from "@/components/features/quiz/play/quiz-question-renderer";
 import { QuizActionArea } from "@/components/features/quiz/play/quiz-action-area";
 import { cn } from "@/lib/utils";
@@ -15,6 +17,20 @@ interface QuizPlayClientProps {
   questions: QuizQuestion[];
   level: string;
 }
+
+const getDuration = (level: string) => {
+  switch (level.toLowerCase()) {
+    case "easy":
+      return 10;
+    case "normal":
+    case "medium":
+      return 8;
+    case "hard":
+      return 5;
+    default:
+      return 8;
+  }
+};
 
 export function QuizPlayClient({ questions, level }: QuizPlayClientProps) {
   const router = useRouter();
@@ -31,6 +47,40 @@ export function QuizPlayClient({ questions, level }: QuizPlayClientProps) {
   const currentQuestion = questions[currentIndex];
   const isLastQuestion = currentIndex === questions.length - 1;
   const progress = ((currentIndex + (isAnswered ? 1 : 0)) / questions.length) * 100;
+
+  const totalDuration = getDuration(level);
+  const [timeLeft, setTimeLeft] = useState(totalDuration);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+
+  // Effect 1: Reset countdown and timeout state on question change
+  useEffect(() => {
+    const duration = getDuration(level);
+    setTimeLeft(duration);
+    setHasTimedOut(false);
+  }, [currentIndex, level]);
+
+  // Effect 2: Smooth ticking interval while active and not answered
+  useEffect(() => {
+    if (isAnswered) return;
+
+    const tickRate = 50; // tick every 50ms for smooth UI transitions
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= tickRate / 1000) {
+          clearInterval(interval);
+          
+          // Trigger timeout
+          setIsAnswered(true);
+          setHasTimedOut(true);
+          setQuestionResults((prevResults) => [...prevResults, false]);
+          return 0;
+        }
+        return prev - tickRate / 1000;
+      });
+    }, tickRate);
+
+    return () => clearInterval(interval);
+  }, [currentIndex, isAnswered]);
 
   // Handlers
   const handleSingleSelect = (id: string) => {
@@ -51,6 +101,7 @@ export function QuizPlayClient({ questions, level }: QuizPlayClientProps) {
   };
 
   const handleMultiSubmit = () => {
+    if (isAnswered) return;
     setIsAnswered(true);
 
     // Track result
@@ -103,8 +154,25 @@ export function QuizPlayClient({ questions, level }: QuizPlayClientProps) {
       />
 
       <QuizProgressBar progress={progress} />
+      
+      <QuizTimerBar
+        timeLeft={timeLeft}
+        totalDuration={totalDuration}
+        isAnswered={isAnswered}
+      />
+      <main className="flex-grow flex flex-col items-center px-6 py-4 w-full max-w-3xl mx-auto z-10 overflow-hidden relative">
+        {hasTimedOut && (
+          <motion.div
+            initial={{ scale: 0.8, y: -20, opacity: 0, x: "-50%" }}
+            animate={{ scale: 1, y: 0, opacity: 1, x: "-50%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="absolute top-4 left-1/2 z-50 bg-red-600/95 border border-red-400 backdrop-blur-md rounded-full px-8 py-3 flex items-center gap-3 text-white shadow-[0_12px_40px_rgba(220,38,38,0.5)] whitespace-nowrap"
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping shrink-0" />
+            <span className="font-extrabold text-lg uppercase tracking-widest font-sans">Time's Up!</span>
+          </motion.div>
+        )}
 
-      <main className="flex-grow flex flex-col items-center px-6 py-4 w-full max-w-3xl mx-auto z-10 overflow-hidden">
         <QuizQuestionRenderer
           currentQuestion={currentQuestion}
           isAnswered={isAnswered}
@@ -113,6 +181,7 @@ export function QuizPlayClient({ questions, level }: QuizPlayClientProps) {
           onSingleSelect={handleSingleSelect}
           onMultiToggle={handleMultiToggle}
           onMultiSubmit={handleMultiSubmit}
+          timedOut={hasTimedOut}
         />
 
         <QuizActionArea

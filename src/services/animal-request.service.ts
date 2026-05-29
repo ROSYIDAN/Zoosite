@@ -232,14 +232,26 @@ export const animalRequestService = {
   },
 
   /**
-   * Manually suspends request privileges for a user.
+   * Manually suspends request privileges for a user, or restores them.
+   * If restoring privileges (unbanning), automatically resets their strike count to 0.
    */
   async banUser(userId: string, isBanned: boolean, durationDays?: number) {
     let bannedUntil: Date | null = null;
     if (isBanned && durationDays && durationDays > 0) {
       bannedUntil = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
     }
-    return await animalRequestRepo.banUser(userId, isBanned, bannedUntil);
+    const result = await animalRequestRepo.banUser(userId, isBanned, bannedUntil);
+    if (!isBanned) {
+      await animalRequestRepo.resetRejectionsTimestamp(userId);
+    }
+    return result;
+  },
+
+  /**
+   * Resets the rejections count (strikes) for a user.
+   */
+  async resetUserStrikes(userId: string) {
+    return await animalRequestRepo.resetRejectionsTimestamp(userId);
   },
 
   /**

@@ -36,6 +36,7 @@ export default function RequestAnimalForm({ classes, initialRejectionCount = 0, 
     handleImageUpload,
     handleClearImage,
     onSubmit,
+    isUnchanged,
   } = useRequestAnimalForm();
 
   if (isBanned) {
@@ -125,7 +126,14 @@ export default function RequestAnimalForm({ classes, initialRejectionCount = 0, 
           <button
             type="submit"
             disabled={isSubmitting || isUploading || isChecking || nameCheckResult?.exists || nameCheckResult?.isUnderReview}
-            className="flex items-center gap-2 px-8 py-2.5 rounded-xl bg-[#2d5a27] text-white text-sm font-bold shadow-md hover:bg-[#1f3f1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-['Plus_Jakarta_Sans'] uppercase tracking-wider"
+            className={cn(
+              "flex items-center gap-2 px-8 py-2.5 rounded-xl text-white text-sm font-bold shadow-md transition-all font-['Plus_Jakarta_Sans'] uppercase tracking-wider",
+              (isSubmitting || isUploading || isChecking || nameCheckResult?.exists || nameCheckResult?.isUnderReview)
+                ? "bg-[#2d5a27] opacity-50 cursor-not-allowed"
+                : isUnchanged
+                  ? "bg-[#2d5a27]/60 cursor-not-allowed opacity-75 hover:bg-[#2d5a27]/60"
+                  : "bg-[#2d5a27] hover:bg-[#1f3f1b] cursor-pointer"
+            )}
           >
             {isSubmitting ? (
               <>

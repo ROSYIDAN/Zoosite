@@ -1,14 +1,22 @@
 import { useRouter } from "next/navigation";
 import { RequestDetail } from "./types";
+import { cn } from "@/lib/utils";
 
 interface RequestHistoryItemProps {
   req: RequestDetail;
   onWithdraw: (id: string) => void;
   onResubmit: (req: RequestDetail) => void;
   isDeleting: boolean;
+  isBanned?: boolean;
 }
 
-export default function RequestHistoryItem({ req, onWithdraw, onResubmit, isDeleting }: RequestHistoryItemProps) {
+export default function RequestHistoryItem({
+  req,
+  onWithdraw,
+  onResubmit,
+  isDeleting,
+  isBanned = false,
+}: RequestHistoryItemProps) {
   const router = useRouter();
 
   const getStatusBadge = (status: RequestDetail["status"]) => {
@@ -108,8 +116,15 @@ export default function RequestHistoryItem({ req, onWithdraw, onResubmit, isDele
 
         {req.status === "REJECTED" && (
           <button
-            onClick={() => onResubmit(req)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2d5a27]/10 hover:bg-[#2d5a27]/20 text-[#2d5a27] text-xs font-bold transition-colors font-['Plus_Jakarta_Sans'] uppercase tracking-wider"
+            disabled={isBanned}
+            onClick={() => !isBanned && onResubmit(req)}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-colors font-['Plus_Jakarta_Sans'] uppercase tracking-wider",
+              isBanned
+                ? "bg-[#2d5a27]/5 text-[#2d5a27]/40 cursor-not-allowed"
+                : "bg-[#2d5a27]/10 hover:bg-[#2d5a27]/20 text-[#2d5a27]"
+            )}
+            title={isBanned ? "Your contribution privileges are currently suspended." : undefined}
           >
             <span className="material-symbols-outlined text-[14px]">edit_square</span>
             Fix & Resubmit

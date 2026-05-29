@@ -53,6 +53,8 @@ export function SilhouetteQuestion({
               !isAnswered ? "brightness-0" : "brightness-100"
             )}
             style={parsedQuestionMedia.style}
+            loading="eager"
+            fetchPriority="high"
           />
         )}
         <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-[10px] md:text-xs text-white/50 font-sans">

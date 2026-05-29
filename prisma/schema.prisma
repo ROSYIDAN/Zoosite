@@ -184,6 +184,7 @@ model User {
   deletedAt            DateTime?         @map("deleted_at") @db.Timestamp(6)
   is_request_banned    Boolean           @default(false)
   request_banned_until DateTime?         @map("request_banned_until") @db.Timestamp(6)
+  rejections_reset_at  DateTime?         @map("rejections_reset_at") @db.Timestamp(6)
 
   accounts      Account[]
   sessions      Session[]

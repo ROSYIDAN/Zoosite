@@ -13,6 +13,7 @@ interface RequestUser {
   image: string | null;
   is_request_banned: boolean;
   request_banned_until: string | null;
+  rejections_reset_at: string | null;
 }
 
 interface RequestDetail {
@@ -120,6 +121,9 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
             if (r.id === id) {
               if (payload.action === "LOCK") {
                 return { ...r, status: "IN_REVIEW", review_started: new Date().toISOString() };
+              }
+              if (payload.action === "UNLOCK") {
+                return { ...r, status: "PENDING", review_started: null };
               }
               if (payload.action === "REJECT") {
                 return { ...r, status: "REJECTED", reject_reason: payload.reject_reason };
@@ -233,7 +237,7 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
         userId,
         isBanned: false,
       },
-      "User request privileges restored!"
+      "User request privileges restored and strikes reset!"
     );
     if (success) {
       setRequests((prev) =>
@@ -245,6 +249,38 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
                 ...r.user,
                 is_request_banned: false,
                 request_banned_until: null,
+                rejections_reset_at: new Date().toISOString(),
+              },
+            };
+          }
+          return r;
+        })
+      );
+    }
+  };
+
+  const handleResetStrikes = async (userId: string) => {
+    const userRequest = requests.find((r) => r.user.id === userId);
+    if (!userRequest) return;
+
+    const success = await handleAction(
+      userRequest.id,
+      {
+        action: "RESET_STRIKES",
+        userId,
+      },
+      "User strikes reset successfully!"
+    );
+
+    if (success) {
+      setRequests((prev) =>
+        prev.map((r) => {
+          if (r.user.id === userId) {
+            return {
+              ...r,
+              user: {
+                ...r.user,
+                rejections_reset_at: new Date().toISOString(),
               },
             };
           }
@@ -256,9 +292,12 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
 
 
 
-  const getStrikeCount = (userId: string) => {
-    // Dynamic local count based on loaded state
-    return requests.filter((r) => r.user.id === userId && r.status === "REJECTED").length;
+  const getStrikeCount = (userId: string, rejectionsResetAt?: string | null) => {
+    // Dynamic local count based on loaded state respecting reset timestamp
+    const resetDate = rejectionsResetAt ? new Date(rejectionsResetAt) : new Date(0);
+    return requests.filter(
+      (r) => r.user.id === userId && r.status === "REJECTED" && new Date(r.created_at) > resetDate
+    ).length;
   };
 
   const isUserBannedNow = (user: RequestUser) => {
@@ -399,6 +438,18 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
                           LOCK REVIEW
                         </span>
                       )}
+                      {req.status === "APPROVED" && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">check_circle</span>
+                          COMPLETE
+                        </span>
+                      )}
+                      {req.status === "REJECTED" && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">cancel</span>
+                          REJECTED
+                        </span>
+                      )}
                     </div>
 
                     <div>
@@ -418,9 +469,9 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
                         <span className="text-[#1a1c19]/50">Strikes (Rejections):</span>
                         <span className={cn(
                           "font-bold",
-                          getStrikeCount(req.user.id) >= 3 ? "text-red-600" : "text-[#1a1c19]"
+                          getStrikeCount(req.user.id, req.user.rejections_reset_at) >= 3 ? "text-red-600" : "text-[#1a1c19]"
                         )}>
-                          {getStrikeCount(req.user.id)} / 3
+                          {getStrikeCount(req.user.id, req.user.rejections_reset_at)} / 3
                         </span>
                       </div>
                       <div className="flex items-center justify-between pt-1 border-t border-[#e3e3de]">
@@ -431,7 +482,27 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
                           <span className="text-green-600 font-bold uppercase text-[10px]">Active</span>
                         )}
                       </div>
+
+                      {getStrikeCount(req.user.id, req.user.rejections_reset_at) > 0 && (
+                        <div className="flex justify-end pt-1.5 border-t border-[#e3e3de] border-dashed">
+                          <button
+                            type="button"
+                            onClick={() => handleResetStrikes(req.user.id)}
+                            className="text-[#2d5a27] hover:text-[#1f3f1b] font-bold text-[9px] uppercase tracking-wider flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[11px]">refresh</span>
+                            Clear Strikes
+                          </button>
+                        </div>
+                      )}
                     </div>
+
+                    {req.status === "REJECTED" && req.reject_reason && (
+                      <div className="bg-red-50 text-red-800 rounded-xl p-3 border border-red-200 text-xs mt-2 max-w-[400px]">
+                        <span className="font-bold block mb-1">Rejection Reason:</span>
+                        <p className="opacity-90">{req.reject_reason}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -471,6 +542,18 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
                     </>
                   )}
 
+                  {req.status === "APPROVED" && req.approved_animal?.canonical_slug && (
+                    <a
+                      href={`/animals/${req.approved_animal.canonical_slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-6 py-2.5 bg-[#2d5a27] hover:bg-[#1f3f1b] text-white text-xs font-bold font-['Plus_Jakarta_Sans'] uppercase tracking-wider rounded-xl shadow-sm transition-all text-center flex items-center justify-center gap-1.5"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">visibility</span>
+                      View Profile
+                    </a>
+                  )}
+
                   {/* Manual Suspend/Ban Toggle */}
                   {req.status !== "APPROVED" && (
                     <>
@@ -486,7 +569,7 @@ export default function AdminRequestsTable({ initialRequests, classes }: AdminRe
                           onClick={() => handleOpenBan(req)}
                           className={cn(
                             "px-4 py-2 border text-[10px] font-bold font-['Plus_Jakarta_Sans'] uppercase tracking-wider rounded-xl transition-colors",
-                            getStrikeCount(req.user.id) >= 3
+                            getStrikeCount(req.user.id, req.user.rejections_reset_at) >= 3
                               ? "border-red-300 text-red-600 bg-red-50/50 hover:bg-red-50"
                               : "border-[#c2c9bb] text-[#1a1c19]/60 hover:bg-[#fafaf5]"
                           )}

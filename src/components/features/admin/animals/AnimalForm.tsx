@@ -23,9 +23,10 @@ interface AnimalFormProps {
   initialCountries?: { id: string; country: string; country_flag: string | null }[];
   onSubmitOverride?: (data: CreateAnimalInput) => Promise<void>;
   onCancelOverride?: () => void | Promise<void>;
+  onRejectOverride?: () => void | Promise<void>;
 }
 
-export default function AnimalForm({ classes, initialData, initialCountries, onSubmitOverride, onCancelOverride }: AnimalFormProps) {
+export default function AnimalForm({ classes, initialData, initialCountries, onSubmitOverride, onCancelOverride, onRejectOverride }: AnimalFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -163,7 +164,7 @@ export default function AnimalForm({ classes, initialData, initialCountries, onS
           <AnimalDistributionCard setValue={setValue} watch={watch} initialCountries={initialCountries} commonName={commonName} />
           <AnimalTagCard setValue={setValue} watch={watch} />
           <AnimalMediaCard register={register} setValue={setValue} watch={watch} errors={errors} commonName={commonName} onPreview={() => setIsPreviewOpen(true)} isSafetyBlurEnabled={isReviewMode} />
-          <AnimalFormActions isSubmitting={isSubmitting} isDirty={isDirty} isValid={isValid} isEditing={isEditing} onCancel={onCancelOverride} />
+          <AnimalFormActions isSubmitting={isSubmitting} isDirty={isDirty} isValid={isValid} isEditing={isEditing} onCancel={onCancelOverride} onReject={onRejectOverride} />
         </div>
       </form>
 

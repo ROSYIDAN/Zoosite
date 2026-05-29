@@ -55,6 +55,14 @@ export async function PATCH(
         const result = await animalRequestService.banUser(userId, isBanned ?? true, durationDays);
         return NextResponse.json({ message: isBanned ? "User privileges updated" : "User unbanned", data: result });
       }
+      case "RESET_STRIKES": {
+        const { userId } = body;
+        if (!userId) {
+          return NextResponse.json({ message: "User ID is required" }, { status: 400 });
+        }
+        await animalRequestService.resetUserStrikes(userId);
+        return NextResponse.json({ message: "User strikes reset successfully" });
+      }
       default: {
         return NextResponse.json({ message: `Unsupported action: ${action}` }, { status: 400 });
       }
