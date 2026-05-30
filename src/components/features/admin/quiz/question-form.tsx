@@ -48,6 +48,12 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
           { label: "True", is_correct: true, media_url: "" },
           { label: "False", is_correct: false, media_url: "" }
         ], { shouldValidate: true, shouldDirty: true });
+      } else if (pattern === "MATCHUP") {
+        methods.setValue("options", [
+          { label: "|", is_correct: true, media_url: "" },
+          { label: "|", is_correct: true, media_url: "" },
+          { label: "|", is_correct: true, media_url: "" },
+        ], { shouldValidate: true, shouldDirty: true });
       }
       setPrevPattern(pattern);
     }

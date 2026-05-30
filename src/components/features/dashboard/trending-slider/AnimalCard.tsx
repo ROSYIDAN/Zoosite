@@ -13,9 +13,10 @@ export interface TrendingAnimal {
 
 interface AnimalCardProps {
   animal: TrendingAnimal;
+  priority?: boolean;
 }
 
-export default function AnimalCard({ animal }: AnimalCardProps) {
+export default function AnimalCard({ animal, priority }: AnimalCardProps) {
   return (
     <Link href={`/animals/${animal.slug}`} className="block h-full">
       <div className="bg-surface-container-low h-82 rounded-2xl p-4 flex flex-col hover:shadow-xl transition-shadow cursor-pointer group">
@@ -23,6 +24,7 @@ export default function AnimalCard({ animal }: AnimalCardProps) {
           <ImageWithSkeleton
             alt={animal.name}
             src={animal.image}
+            priority={priority}
             fallbackSrc="/static_image.png"
             className="w-full h-full object-cover rounded-xl"
             containerClassName="w-full h-full rounded-xl overflow-hidden"

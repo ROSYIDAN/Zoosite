@@ -18,17 +18,21 @@ interface QuizPlayClientProps {
   level: string;
 }
 
-const getDuration = (level: string) => {
+const getDuration = (level: string, type?: string) => {
+  // Matchup questions need more time due to multiple interactions
+  if (type === "MATCHUP") {
+    switch (level.toLowerCase()) {
+      case "easy": return 20;
+      case "normal": case "medium": return 15;
+      case "hard": return 12;
+      default: return 15;
+    }
+  }
   switch (level.toLowerCase()) {
-    case "easy":
-      return 10;
-    case "normal":
-    case "medium":
-      return 8;
-    case "hard":
-      return 5;
-    default:
-      return 8;
+    case "easy": return 10;
+    case "normal": case "medium": return 8;
+    case "hard": return 5;
+    default: return 8;
   }
 };
 
@@ -48,16 +52,16 @@ export function QuizPlayClient({ questions, level }: QuizPlayClientProps) {
   const isLastQuestion = currentIndex === questions.length - 1;
   const progress = ((currentIndex + (isAnswered ? 1 : 0)) / questions.length) * 100;
 
-  const totalDuration = getDuration(level);
+  const totalDuration = getDuration(level, currentQuestion?.type);
   const [timeLeft, setTimeLeft] = useState(totalDuration);
   const [hasTimedOut, setHasTimedOut] = useState(false);
 
   // Effect 1: Reset countdown and timeout state on question change
   useEffect(() => {
-    const duration = getDuration(level);
+    const duration = getDuration(level, currentQuestion?.type);
     setTimeLeft(duration);
     setHasTimedOut(false);
-  }, [currentIndex, level]);
+  }, [currentIndex, level, currentQuestion?.type]);
 
   // Effect 2: Smooth ticking interval while active and not answered
   useEffect(() => {
@@ -108,6 +112,12 @@ export function QuizPlayClient({ questions, level }: QuizPlayClientProps) {
     const correctIds = currentQuestion.options.filter((o: QuizOption) => o.isCorrect).map((o: QuizOption) => o.id).sort();
     const selectedIds = [...multiSelectedIds].sort();
     const isCorrect = correctIds.length === selectedIds.length && correctIds.every((id, i) => id === selectedIds[i]);
+    setQuestionResults(prev => [...prev, isCorrect]);
+  };
+
+  const handleMatchupComplete = (isCorrect: boolean) => {
+    if (isAnswered) return;
+    setIsAnswered(true);
     setQuestionResults(prev => [...prev, isCorrect]);
   };
 
@@ -181,6 +191,7 @@ export function QuizPlayClient({ questions, level }: QuizPlayClientProps) {
           onSingleSelect={handleSingleSelect}
           onMultiToggle={handleMultiToggle}
           onMultiSubmit={handleMultiSubmit}
+          onMatchupComplete={handleMatchupComplete}
           timedOut={hasTimedOut}
         />
 

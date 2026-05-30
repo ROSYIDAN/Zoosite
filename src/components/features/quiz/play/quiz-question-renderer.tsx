@@ -5,6 +5,7 @@ import { SinglePickQuestion } from "./single-pick-question";
 import { MultiPickQuestion } from "./multi-pick-question";
 import { SilhouetteQuestion } from "./silhouette-question";
 import { TrueFalseQuestion } from "./true-false-question";
+import { MatchupQuestion } from "./matchup-question";
 
 interface QuizQuestionRendererProps {
   currentQuestion: any;
@@ -14,6 +15,7 @@ interface QuizQuestionRendererProps {
   onSingleSelect: (id: string) => void;
   onMultiToggle: (id: string) => void;
   onMultiSubmit: () => void;
+  onMatchupComplete: (isCorrect: boolean) => void;
   timedOut?: boolean;
 }
 
@@ -25,6 +27,7 @@ export function QuizQuestionRenderer({
   onSingleSelect,
   onMultiToggle,
   onMultiSubmit,
+  onMatchupComplete,
   timedOut,
 }: QuizQuestionRendererProps) {
   return (
@@ -82,6 +85,16 @@ export function QuizQuestionRenderer({
               isAnswered={isAnswered}
               selectedOptionId={singleSelectedId}
               onSelect={onSingleSelect}
+              timedOut={timedOut}
+            />
+          )}
+
+          {currentQuestion.type === "MATCHUP" && currentQuestion.matchPairs && (
+            <MatchupQuestion
+              question={currentQuestion.question}
+              pairs={currentQuestion.matchPairs}
+              isAnswered={isAnswered}
+              onComplete={onMatchupComplete}
               timedOut={timedOut}
             />
           )}

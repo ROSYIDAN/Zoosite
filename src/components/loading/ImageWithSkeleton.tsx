@@ -20,18 +20,14 @@ export default function ImageWithSkeleton({
   fallbackSrc,
   ...props
 }: ImageWithSkeletonProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const isPriority = !!props.priority;
+  const [isLoaded, setIsLoaded] = useState(isPriority);
   const [imgSrc, setImgSrc] = useState(src);
 
   React.useEffect(() => {
     setImgSrc(src);
-    setIsLoaded(false);
-  }, [src]);
-  // We don't need imgRef for Next Image since it triggers onLoad reliably even from cache
-  // Next.js Image component handles complete/cache state internally very well.
-  React.useEffect(() => {
-    // Left empty for compatibility, Next.js handles onLoad automatically.
-  }, []);
+    setIsLoaded(isPriority);
+  }, [src, isPriority]);
 
   const positionClass = containerClassName?.includes("absolute") ? "" : "relative";
 

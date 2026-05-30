@@ -3,7 +3,7 @@ import { z } from "zod";
 // ── Enums (must match Prisma enums) ──
 
 const quizLevelEnum = z.enum(["EASY", "NORMAL", "HARD"]);
-const quizPatternEnum = z.enum(["SINGLE_PICK_LIST", "MULTI_PICK_GRID", "IMAGE_RECOGNITION", "TRUE_FALSE"]);
+const quizPatternEnum = z.enum(["SINGLE_PICK_LIST", "MULTI_PICK_GRID", "IMAGE_RECOGNITION", "TRUE_FALSE", "MATCHUP"]);
 
 // ── Query params for GET /api/quiz/questions ──
 
@@ -44,6 +44,21 @@ export const createQuizQuestionSchema = z
   )
   .refine(
     (data) => {
+      if (data.pattern === "MATCHUP") {
+        const count = data.options.length;
+        return count === 3 || count === 4 || count === 6;
+      }
+      return true;
+    },
+    {
+      message: "Matchup must have exactly 3, 4, or 6 pairs.",
+      path: ["options"],
+    }
+  )
+  .refine(
+    (data) => {
+      // Matchup pairs are all implicitly correct — skip this check
+      if (data.pattern === "MATCHUP") return true;
       const correctCount = data.options.filter((o) => o.is_correct).length;
       if (data.pattern === "MULTI_PICK_GRID") {
         return correctCount >= 1;

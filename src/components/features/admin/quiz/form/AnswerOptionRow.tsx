@@ -11,13 +11,22 @@ interface AnswerOptionRowProps {
   isTrueFalse?: boolean;
 }
 
+import AnimalSearchInput from "./AnimalSearchInput";
+
 export default function AnswerOptionRow({ index, remove, isMultiPick, isTrueFalse }: AnswerOptionRowProps) {
-  const { register, setValue, watch, formState: { errors } } = useFormContext<CreateQuizQuestionInput>();
+  const { setValue, watch, formState: { errors } } = useFormContext<CreateQuizQuestionInput>();
   
   const optionsErrors = errors.options?.[index];
 
   const handleMediaSelect = (url: string, refId: string | null) => {
     setValue(`options.${index}.media_url`, url, { shouldValidate: true, shouldDirty: true });
+  };
+
+  const handleSelectAnimal = (animal: { name: string; imageUrl: string }) => {
+    setValue(`options.${index}.label`, animal.name, { shouldValidate: true, shouldDirty: true });
+    if (animal.imageUrl) {
+      setValue(`options.${index}.media_url`, animal.imageUrl, { shouldValidate: true, shouldDirty: true });
+    }
   };
 
   const isCorrectPath = `options.${index}.is_correct` as const;
@@ -36,6 +45,7 @@ export default function AnswerOptionRow({ index, remove, isMultiPick, isTrueFals
   };
 
   const isChecked = watch(isCorrectPath);
+  const currentLabel = watch(`options.${index}.label`) || "";
 
   return (
     <div className="flex items-start gap-3 p-4 rounded-xl border border-[#c2c9bb] bg-[#fafaf5] focus-within:border-[#2d5a27] focus-within:ring-1 focus-within:ring-[#2d5a27]/30 transition-all group">
@@ -49,11 +59,11 @@ export default function AnswerOptionRow({ index, remove, isMultiPick, isTrueFals
       </div>
       <div className="flex-1 flex flex-col gap-4">
         <div className="flex flex-col">
-          <input
-            {...register(`options.${index}.label`)}
-            className="w-full bg-transparent border-b border-[#c2c9bb] px-1 py-1 text-sm text-[#1a1c19] font-['Manrope'] focus:border-[#2d5a27] focus:outline-none transition-colors placeholder:text-[#72796e]"
-            placeholder="Answer Label"
-            type="text"
+          <AnimalSearchInput
+            value={currentLabel}
+            onChange={(val) => setValue(`options.${index}.label`, val, { shouldValidate: true, shouldDirty: true })}
+            onSelectAnimal={handleSelectAnimal}
+            placeholder={isTrueFalse ? "True / False" : "Answer Label or Search Animal..."}
           />
           {optionsErrors?.label && (
             <span className="text-red-500 text-xs mt-1 font-['Manrope']">{optionsErrors.label.message}</span>

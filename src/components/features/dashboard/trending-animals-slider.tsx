@@ -121,7 +121,7 @@ export default function TrendingAnimalsSlider({ animals, lastFetched }: Trending
           >
             {extendedAnimals.map((animal, index) => (
               <div key={index} className="flex-none w-full md:w-1/2 lg:w-1/4 px-3">
-                <AnimalCard animal={animal} />
+                <AnimalCard animal={animal} priority={index < itemsPerView} />
               </div>
             ))}
           </div>

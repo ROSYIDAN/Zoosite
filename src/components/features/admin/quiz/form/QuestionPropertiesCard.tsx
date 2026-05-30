@@ -41,6 +41,7 @@ export default function QuestionPropertiesCard() {
             <option value="MULTI_PICK_GRID">Multi Pick (Grid)</option>
             <option value="IMAGE_RECOGNITION">Image Recognition</option>
             <option value="TRUE_FALSE">True / False</option>
+            <option value="MATCHUP">Matchup (Pairing)</option>
           </select>
           <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#72796e] pointer-events-none text-[20px]">
             expand_more

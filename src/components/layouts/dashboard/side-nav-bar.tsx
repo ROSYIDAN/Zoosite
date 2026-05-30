@@ -52,7 +52,6 @@ export default function SideNavBar() {
         <SideNavItem href="/animals" icon="database" label="Species Archive" active={pathname.startsWith("/animals")} />
         <SideNavItem href="/habitats" icon="forest" label="Habitats" active={pathname.startsWith("/habitats")} />
         <SideNavItem href="/conservation" icon="nature_people" label="Conservation" active={pathname.startsWith("/conservation")} />
-        <SideNavItem href="/notes" icon="edit_note" label="Field Notes" active={pathname.startsWith("/notes")} />
         
         {session?.user && (
           <div className="mt-4 pt-4 border-t border-[#1a1c19]/5">

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 type DifficultyLevel = "EASY" | "NORMAL" | "HARD";
-type FormatType = "SINGLE_PICK_LIST" | "MULTI_PICK_GRID" | "IMAGE_RECOGNITION" | "TRUE_FALSE";
+type FormatType = "SINGLE_PICK_LIST" | "MULTI_PICK_GRID" | "IMAGE_RECOGNITION" | "TRUE_FALSE" | "MATCHUP";
 
 interface DifficultyBadgeProps {
   level: DifficultyLevel;
@@ -40,6 +40,7 @@ export function FormatBadge({ pattern }: FormatBadgeProps) {
     MULTI_PICK_GRID: "Multi Pick",
     IMAGE_RECOGNITION: "Image Recognition",
     TRUE_FALSE: "True / False",
+    MATCHUP: "Matchup",
   };
   return (
     <span className="inline-flex items-center px-2.5 py-1 rounded-full border border-[#c2c9bb] bg-white text-[#42493e] text-xs font-medium">

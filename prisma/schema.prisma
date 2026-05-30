@@ -165,6 +165,7 @@ enum QuizPattern {
   MULTI_PICK_GRID
   IMAGE_RECOGNITION
   TRUE_FALSE
+  MATCHUP
 }
 
 enum UserRole {
