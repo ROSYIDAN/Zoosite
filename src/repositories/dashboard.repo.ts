@@ -14,7 +14,8 @@ export const dashboardRepo = {
               SELECT COUNT(DISTINCT ad.animal_id)
               FROM countries c
               JOIN animal_distributions ad ON ad.country_id = c.id
-              WHERE c.region_id = r.id
+              JOIN animals a ON ad.animal_id = a.id
+              WHERE c.region_id = r.id AND a.is_visible = true
           )::int as animal_count,
           (
               SELECT h.habitat_name
@@ -22,7 +23,8 @@ export const dashboardRepo = {
               JOIN animal_distributions ad ON ad.country_id = c.id
               JOIN animal_environment ae ON ae.animal_id = ad.animal_id
               JOIN habitat h ON h.id = ae.habitat_id
-              WHERE c.region_id = r.id
+              JOIN animals a ON ad.animal_id = a.id
+              WHERE c.region_id = r.id AND a.is_visible = true
               GROUP BY h.habitat_name
               ORDER BY COUNT(DISTINCT ad.animal_id) DESC
               LIMIT 1
@@ -52,7 +54,7 @@ export const dashboardRepo = {
 
   async countAnimalsByClass(classId: string) {
     return prisma.animals.count({
-      where: { class_id: classId },
+      where: { class_id: classId, is_visible: true },
     });
   },
 
@@ -61,6 +63,7 @@ export const dashboardRepo = {
   async getAnimalsByHabitat(habitat: string) {
     return prisma.animals.findMany({
       where: {
+        is_visible: true,
         animal_environment: {
           some: {
             habitat: {
@@ -87,6 +90,7 @@ export const dashboardRepo = {
   async getAnimalsByRegion(region: string) {
     return prisma.animals.findMany({
       where: {
+        is_visible: true,
         animal_distributions: {
           some: {
             countries: {
@@ -117,6 +121,7 @@ export const dashboardRepo = {
   async countAnimalsLivedByRegion(region: string) {
     return prisma.animals.count({
       where: {
+        is_visible: true,
         animal_distributions: {
           some: {
             countries: {
@@ -133,6 +138,7 @@ export const dashboardRepo = {
   async countAnimalsLivedByHabitat(habitat: string) {
     return prisma.animals.count({
       where: {
+        is_visible: true,
         animal_environment: {
           some: {
             habitat: {
@@ -156,13 +162,13 @@ export const dashboardRepo = {
 
   async getRandomAnimalIds(limit: number) {
     return prisma.$queryRaw<{ id: string }[]>(
-      Prisma.sql`SELECT id FROM animals ORDER BY random() LIMIT ${limit}`
+      Prisma.sql`SELECT id FROM animals WHERE is_visible = true ORDER BY random() LIMIT ${limit}`
     );
   },
 
   async getAnimalsWithImages(idList: string[]) {
     return prisma.animals.findMany({
-      where: { id: { in: idList } },
+      where: { id: { in: idList }, is_visible: true },
       select: {
         id: true,
         animal_images: {
@@ -201,7 +207,7 @@ export const dashboardRepo = {
     }
 
     return prisma.animals.findMany({
-      where: { id: { in: idList } },
+      where: { id: { in: idList }, is_visible: true },
       select: selectConfig,
     });
   },

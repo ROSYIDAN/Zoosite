@@ -10,6 +10,7 @@ import { RequestDetail } from "./types";
 import RequestHistoryFilters from "./request-history-filters";
 import RequestHistoryItem from "./request-history-item";
 import RequestHistoryEmptyState from "./request-history-empty-state";
+import { GuidelinesModal } from "./guidelines-modal";
 
 interface RequestHistoryProps {
   initialRequests: RequestDetail[];
@@ -29,6 +30,14 @@ export default function RequestHistory({
   const router = useRouter();
   const [requests, setRequests] = useState<RequestDetail[]>(initialRequests);
   const [filter, setFilter] = useState<FilterType>("ALL");
+  const [isGuidelinesOpen, setIsGuidelinesOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const alreadyRead = localStorage.getItem("zoosite_guidelines_read") === "true";
+    if (!alreadyRead) {
+      setIsGuidelinesOpen(true);
+    }
+  }, []);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<string>("");
 
@@ -103,6 +112,8 @@ export default function RequestHistory({
 
   return (
     <div className="w-full max-w-screen-2xl mx-auto pb-20 font-['Manrope']">
+      {/* Guidelines Modal Component */}
+      <GuidelinesModal isOpen={isGuidelinesOpen} onOpenChange={setIsGuidelinesOpen} />
       {/* ⚠️ Warning Banner (Only if not banned and initialRejectionCount === 2) */}
       {!isBanned && initialRejectionCount === 2 && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 mb-8 shadow-sm">
@@ -175,7 +186,19 @@ export default function RequestHistory({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-xl font-bold text-[#1a1c19] font-['Plus_Jakarta_Sans'] uppercase tracking-wider">My Animal Requests</h1>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-bold text-[#1a1c19] font-['Plus_Jakarta_Sans'] uppercase tracking-wider">
+              My Animal Requests
+            </h1>
+            <button
+              type="button"
+              onClick={() => setIsGuidelinesOpen(true)}
+              className="w-6 h-6 rounded-full bg-[#2d5a27]/10 hover:bg-[#2d5a27]/20 text-[#2d5a27] transition-all flex items-center justify-center cursor-pointer shadow-sm"
+              title="View Contribution Guidelines"
+            >
+              <span className="material-symbols-outlined text-[14px] font-bold">gavel</span>
+            </button>
+          </div>
           <p className="text-xs text-[#1a1c19]/50 mt-1">Track contributions and check statuses of your requested animals.</p>
         </div>
         <button

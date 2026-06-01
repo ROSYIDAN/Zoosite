@@ -27,7 +27,8 @@ export default function SideNavBar() {
     setIsMounted(true);
   }, []);
 
-  const isUnlocked = isMounted && completedLevels.includes("hard");
+  const isAdmin = session?.user?.role === UserRole.ADMIN;
+  const isUnlocked = isAdmin || (isMounted && completedLevels.includes("hard"));
 
   return (
     <aside
@@ -53,7 +54,7 @@ export default function SideNavBar() {
         <SideNavItem href="/habitats" icon="forest" label="Habitats" active={pathname.startsWith("/habitats")} />
         <SideNavItem href="/conservation" icon="nature_people" label="Conservation" active={pathname.startsWith("/conservation")} />
         
-        {session?.user && (
+        {session?.user && (isAdmin || isMounted) && (
           <div className="mt-4 pt-4 border-t border-[#1a1c19]/5">
             <p className="px-6 mb-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Contributions</p>
             {isUnlocked ? (
@@ -80,6 +81,7 @@ export default function SideNavBar() {
 
       <div className="px-4 mt-auto">
         <div className="mt-4 pt-4 border-t border-[#1a1c19]/5 space-y-1">
+          <SideNavItem href="/profile" icon="person" label="My Profile" active={pathname === "/profile"} small />
           <SideNavItem href="/help" icon="help_outline" label="Help Center" small />
           <button 
             onClick={() => signOut({ callbackUrl: "/" })}

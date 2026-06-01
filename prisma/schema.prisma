@@ -179,6 +179,9 @@ model User {
   email                String            @unique
   emailVerified        DateTime?         @map("email_verified") @db.Timestamp(6)
   image                String?
+  bio                  String?           @db.VarChar(160)
+  image_position       String?           @default("50% 50%") @db.VarChar(50)
+  image_scale          Float?            @default(1.0)
   role                 UserRole          @default(USER)
   createdAt            DateTime          @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt            DateTime          @updatedAt @map("updated_at") @db.Timestamp(6)

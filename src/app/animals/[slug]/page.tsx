@@ -11,6 +11,7 @@ import {
   AnimalPredators,
 } from "@/components/animal_details";
 import FavoriteButton from "@/components/features/favorites/FavoriteButton";
+import { SetAvatarButton } from "@/components/features/profile/set-avatar-button";
 import { getAnimalBySlug, mapAnimalToData, getCommonName } from "@/lib/actions";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -22,6 +23,7 @@ export default async function AnimalDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const session = await auth();
 
   const animal = await getAnimalBySlug(slug);
 
@@ -31,7 +33,6 @@ export default async function AnimalDetailPage({
 
   // Security Guard: Hidden animals can only be viewed by administrators
   if (!animal.is_visible) {
-    const session = await auth();
     if (session?.user?.role !== UserRole.ADMIN) {
       notFound();
     }
@@ -72,12 +73,17 @@ export default async function AnimalDetailPage({
     <div className="py-12 px-6 max-w-[1440px] mx-auto">
       <NavigationBreadcrumbs currentPageLabel={commonName} className="mb-8" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-        <div>
+        <div className="relative w-full max-w-[584px] group">
           <AnimalImage 
             imageUrl={animalData.images[0]} 
             altText={commonName} 
             source={animalData.image_sources?.[0]} 
           />
+          {session?.user && animalData.images[0] && (
+            <div className="absolute top-4 right-4 z-10">
+              <SetAvatarButton imageUrl={animalData.images[0]} animalName={commonName} />
+            </div>
+          )}
         </div>
         <AutoPagination>
           {/* Page 1: Primary Info */}
@@ -100,7 +106,7 @@ export default async function AnimalDetailPage({
                   tags={animalData.tags}
                 />
               </div>
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col items-end gap-3">
                 <FavoriteButton animal={{ id: animal.id, name: commonName, slug, image: animalData.images[0] }} className="scale-125" />
               </div>
             </div>

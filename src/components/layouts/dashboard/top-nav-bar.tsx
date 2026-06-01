@@ -8,7 +8,7 @@ import { useSidebar } from "@/hooks/use-sidebar";
 
 import { useSession } from "next-auth/react";
 import { UserRole } from "@prisma/client";
-import Image from "next/image";
+import { UserAvatar } from "@/components/features/profile/user-avatar";
 
 /**
  * TopNavBar component for the dashboard layout.
@@ -51,7 +51,7 @@ export default function TopNavBar() {
           {user?.role === UserRole.ADMIN && (
             <Link
               href="/admin"
-              className="flex items-center gap-2 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-white transition-all hover:bg-primary-container active:scale-[0.98]"
+              className="flex items-center gap-2 rounded-full bg-primary px-3.5 py-2 text-xs font-bold text-white transition-all hover:bg-primary-container active:scale-[0.98]"
             >
               <span className="material-symbols-outlined text-sm">admin_panel_settings</span>
               Admin
@@ -60,24 +60,20 @@ export default function TopNavBar() {
           <HeaderAction icon="notifications" label="Notifications" />
           <HeaderAction icon="settings" label="Settings" />
 
-          <div className="flex items-center gap-2 pl-2 border-l border-stone-200">
-            {user?.image ? (
-              <Image
-                alt={user.name ?? "User avatar"}
-                src={user.image}
-                width={36}
-                height={36}
-                className="w-9 h-9 rounded-full object-cover ring-2 ring-primary/10"
-              />
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-[#d0e8c5] flex items-center justify-center text-xs font-bold text-primary">
-                {user?.name?.[0] ?? user?.email?.[0] ?? "U"}
-              </div>
-            )}
-            <span className="hidden sm:inline text-xs font-bold text-primary dark:text-[#d0e8c5]">
+          <Link href="/profile" className="flex items-center gap-3 pl-3 border-l border-stone-200 hover:opacity-80 transition-opacity cursor-pointer">
+            <UserAvatar
+              image={user?.image}
+              name={user?.name}
+              email={user?.email}
+              image_position={user?.image_position}
+              image_scale={user?.image_scale}
+              className="w-11 h-11 ring-2 ring-primary/10"
+              sizes="96px"
+            />
+            <span className="hidden sm:inline text-sm font-bold text-primary dark:text-[#d0e8c5]">
               {user?.name ?? user?.email}
             </span>
-          </div>
+          </Link>
         </div>
       </div>
     </header>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useRequestAnimalForm } from "@/hooks/use-request-animal-form";
@@ -11,6 +12,7 @@ import RequestImageSection from "./request-image-section";
 import RequestClassificationSection from "./request-classification-section";
 import RequestDescriptionSection from "./request-description-section";
 import RequestStatsSection from "./request-stats-section";
+import { GuidelinesModal } from "./guidelines-modal";
 
 interface RequestAnimalFormProps {
   classes: { id: string; name: string }[];
@@ -20,6 +22,14 @@ interface RequestAnimalFormProps {
 
 export default function RequestAnimalForm({ classes, initialRejectionCount = 0, isBanned = false }: RequestAnimalFormProps) {
   const router = useRouter();
+  const [isGuidelinesOpen, setIsGuidelinesOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const alreadyRead = localStorage.getItem("zoosite_guidelines_read") === "true";
+    if (!alreadyRead) {
+      setIsGuidelinesOpen(true);
+    }
+  }, []);
 
   // Extract all states, validations, debouncing, and uploader logic from custom hook
   const {
@@ -53,8 +63,23 @@ export default function RequestAnimalForm({ classes, initialRejectionCount = 0, 
 
   return (
     <div className="w-full mx-auto pb-20 font-['Manrope']">
+      {/* Guidelines Modal Component */}
+      <GuidelinesModal isOpen={isGuidelinesOpen} onOpenChange={setIsGuidelinesOpen} />
+
       {/* ⚠️ Strike Warning Sub-component */}
       <RequestStrikeWarning rejectionCount={initialRejectionCount} />
+
+      {/* 💡 Guidelines Trigger Button */}
+      <div className="flex justify-center mb-8">
+        <button
+          type="button"
+          onClick={() => setIsGuidelinesOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#2d5a27]/10 text-[#2d5a27] hover:bg-[#2d5a27]/20 transition-all font-semibold font-['Plus_Jakarta_Sans'] text-[10px] uppercase tracking-wider shadow-sm cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-[14px]">gavel</span>
+          View Contribution Guidelines
+        </button>
+      </div>
 
       {/* Tabs */}
       <div className="flex bg-[#e3e3de] p-1.5 rounded-2xl max-w-[400px] mx-auto mb-8 shadow-sm">

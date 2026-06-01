@@ -9,6 +9,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
+  callbacks: {
+    ...authConfig.callbacks,
+    async jwt({ token, user, trigger, session }) {
+      // First run the base jwt mapping from authConfig
+      token = await authConfig.callbacks.jwt({ token, user, trigger, session } as any);
+
+      // If it's a routine background check or reload, fetch latest from DB to prevent stale session values
+      if (!user && trigger !== "update" && token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: {
+              image: true,
+              image_position: true,
+              image_scale: true,
+              name: true,
+              role: true,
+            },
+          });
+          if (dbUser) {
+            token.picture = dbUser.image;
+            token.image_position = dbUser.image_position ?? "50% 50%";
+            token.image_scale = dbUser.image_scale ?? 1.0;
+            token.name = dbUser.name;
+            token.role = dbUser.role;
+          }
+        } catch (err) {
+          console.error("Failed to sync session with database:", err);
+        }
+      }
+      return token;
+    },
+  },
   providers: [
     ...authConfig.providers,
     Credentials({
