@@ -257,6 +257,7 @@ export function useRequestAnimalForm() {
   return {
     register,
     handleSubmit,
+    setValue,
     errors,
     activeTab,
     setActiveTab,

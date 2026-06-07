@@ -73,6 +73,7 @@ export default function AnimalDistributionCard({ setValue, watch, initialCountri
   
   // We need to keep track of the full country objects to show names for the selected IDs
   const [selectedCountries, setSelectedCountries] = useState<Country[]>(initialCountries || []);
+  const [allCountries, setAllCountries] = useState<Country[]>([]);
 
   // ── Inline Country Registration Modal State ──
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -98,6 +99,29 @@ export default function AnimalDistributionCard({ setValue, watch, initialCountri
       .then((data) => setRegions(data.data || []))
       .catch((err) => console.error("Failed to load regions:", err));
   }, []);
+
+  // ── Fetch all countries on mount for automatic synchronization (e.g. AI autofill) ──
+  useEffect(() => {
+    fetch("/api/countries?all=true")
+      .then((res) => res.json())
+      .then((data) => {
+        const list = data.data || [];
+        setAllCountries(list);
+        if (selectedCountryIds.length > 0) {
+          const selected = list.filter((c: Country) => selectedCountryIds.includes(c.id));
+          setSelectedCountries(selected);
+        }
+      })
+      .catch((err) => console.error("Failed to load all countries:", err));
+  }, []);
+
+  // ── Synchronize selectedCountries when selectedCountryIds or allCountries changes ──
+  useEffect(() => {
+    if (allCountries.length > 0) {
+      const selected = allCountries.filter((c) => selectedCountryIds.includes(c.id));
+      setSelectedCountries(selected);
+    }
+  }, [selectedCountryIds, allCountries]);
 
   // ── Country Search ──
   useEffect(() => {
@@ -162,6 +186,12 @@ export default function AnimalDistributionCard({ setValue, watch, initialCountri
       setValue("countries", [...selectedCountryIds, country.id], { shouldDirty: true });
       setSelectedCountries((prev) => [...prev, country]);
     }
+    setAllCountries((prev) => {
+      if (!prev.some((c) => c.id === country.id)) {
+        return [...prev, country];
+      }
+      return prev;
+    });
     setCountryQuery("");
     setShowCountryDropdown(false);
   };
@@ -217,6 +247,7 @@ export default function AnimalDistributionCard({ setValue, watch, initialCountri
           });
         }
       }
+      setAllCountries(dbCountries);
 
       toast.dismiss(toastId);
       if (newlySelected.length > 0 && notFoundNames.length === 0) {

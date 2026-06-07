@@ -16,6 +16,7 @@ import AnimalTagCard from "./animal-form-admin/animal-tag-card";
 import AnimalDistributionCard from "./animal-form-admin/animal-distribution-card";
 import AnimalFormActions from "./animal-form-admin/animal-form-actions";
 import AnimalPreviewModal from "./animal-form-admin/AnimalPreviewModal";
+import AnimalAiAutofill from "./animal-form-admin/animal-ai-autofill";
 
 interface AnimalFormProps {
   classes: { id: string; name: string }[];
@@ -145,6 +146,15 @@ export default function AnimalForm({ classes, initialData, initialCountries, onS
               If no match is found, use the <strong className="text-[#4285F4]">G</strong><strong className="text-[#EA4335]">o</strong><strong className="text-[#FBBC05]">o</strong><strong className="text-[#4285F4]">g</strong><strong className="text-[#34A853]">l</strong><strong className="text-[#EA4335]">e</strong> link next to field labels to search online.
             </p>
           </div>
+        </div>
+
+        {/* AI Auto-Fill Assistant */}
+        <div className="lg:col-span-2">
+          <AnimalAiAutofill
+            classes={classes}
+            initialCountries={initialCountries}
+            setValue={setValue}
+          />
         </div>
 
         {/* Left Column (Identity & Description) */}

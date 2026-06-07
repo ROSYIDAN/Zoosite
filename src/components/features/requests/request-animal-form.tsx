@@ -13,6 +13,7 @@ import RequestClassificationSection from "./request-classification-section";
 import RequestDescriptionSection from "./request-description-section";
 import RequestStatsSection from "./request-stats-section";
 import { GuidelinesModal } from "./guidelines-modal";
+import AnimalAiAutofill from "../admin/animals/animal-form-admin/animal-ai-autofill";
 
 interface RequestAnimalFormProps {
   classes: { id: string; name: string }[];
@@ -35,6 +36,7 @@ export default function RequestAnimalForm({ classes, initialRejectionCount = 0, 
   const {
     register,
     handleSubmit,
+    setValue,
     errors,
     activeTab,
     setActiveTab,
@@ -79,6 +81,16 @@ export default function RequestAnimalForm({ classes, initialRejectionCount = 0, 
           <span className="material-symbols-outlined text-[14px]">gavel</span>
           View Contribution Guidelines
         </button>
+      </div>
+
+      {/* AI Auto-Fill Assistant */}
+      <div className="max-w-[800px] mx-auto">
+        <AnimalAiAutofill
+          classes={classes}
+          setValue={setValue}
+          isUserRequest={true}
+          onSuccess={() => setActiveTab("FULL_DETAIL")}
+        />
       </div>
 
       {/* Tabs */}

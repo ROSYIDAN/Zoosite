@@ -61,6 +61,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
           src={cleanImage}
           alt={name || "User avatar"}
           fill
+          unoptimized
           className="object-cover"
           style={{
             transform: `translate(${x}%, ${y}%) scale(${image_scale || 1.0})`,
