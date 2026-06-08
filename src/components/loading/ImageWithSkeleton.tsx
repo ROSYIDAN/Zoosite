@@ -57,6 +57,10 @@ export default function ImageWithSkeleton({
             }
           }}
           className={`${className} transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+          unoptimized={
+            (typeof imgSrc === "string" && (imgSrc.startsWith("http://") || imgSrc.startsWith("https://"))) ||
+            props.unoptimized
+          }
           {...props}
         />
       )}

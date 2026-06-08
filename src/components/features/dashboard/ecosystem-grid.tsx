@@ -3,42 +3,50 @@ import ImageWithSkeleton from "@/components/loading/ImageWithSkeleton";
 import { cn } from "@/lib/utils";
 
 /**
- * EcosystemGrid component displaying various habitats.
+ * EcosystemGrid component displaying the Biome Explorer sections.
  * Following FE System Law: kebab-case filename, smart domain component in features.
  */
 export default function EcosystemGrid() {
   return (
     <section className="space-y-6">
       <h2 className="text-2xl font-bold tracking-tight text-primary font-headline">
-        Ecosystem Archive
+        Biome Explorer
       </h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
         <HabitatLink
-          href="/habitats/savanna"
-          title="Savanna"
-          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuCMGoM1daoMPZt32Or4sN6m0ZcrA0g2_FdsFlCysWtCeA-vZY_5YZzhFqIQDU2cloTUBhh1VoDeQ4lCtsLt_doHxgUGKYUwPQ0seyJJ2sZIoMa9mEB-WyRf6L0-HgEXaepY06AD60XCJKSYzvpYlqdfBlkFZ4I8iUlB1GXFcz0lnsrq-y8UPIf641YZrvz-bqKUXmplcSLdxuOexe6y9e5gJA26u7cYCGGW7LooRQCv0TiJZXnCPV8ZNmp9j2RoVCls6dojDcYYrIzf"
-          priority={true}
+          href="/habitats#forests"
+          title="Forests"
+          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuDadjWTOMfguD_tfs48aC-NRDHcb4ytEPynocRlNKVLaz3FWfVekQuBUrIHZQ9v8alT0hm7j3GyRV-SbZKZl_XYb6tXt3qd-97wVi5m1RpQUqjKe1-ltE0R7tnVWSDsD7_EpruioTn911SIs9rY9AJW-yAl7ATjlO92cfMIJb8r0cXhEfL6oBrCpi_Dtsx7TW456Ym6sCwXQQif6Ax2zKHZmNyAPSg8-axG2pq0z2-EJI6GQUXf4PI2HvsuxEtOPnol8XVwIaMzb74"
         />
 
         <HabitatLink
-          href="/habitats/forest"
-          title="Forest"
-          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuDJfDwnjxtxlb3LMZGsA5lx5ca59J4phTWdypzQuufXF4goX3uNATaAnwN30JHxtnJtGl3YQ5lK11rpeqjUfMMT0VTahE7mVb7bJr7duHbbHasyu2cCBKMAy4H0IdLX9Fo3BNAqih2z2O2qiNHFcnE_ybuLLIBODjz-21Zri3lm-R7FlABFQ-zsAQ9Jpv5LN1Xw1OUH0EZ6A2gh5KGFLYI_bBAmtx52wncK_qXKv6GUXryJCCs6AGJYSjRxXKJoVUWAVrKRDSUD8qWC"
-          priority={true}
+          href="/habitats#grasslands"
+          title="Grasslands"
+          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ1xb_JQMugjeQiob9reIJU-eTRqsuYiOxjunJ3gHdug7zSxbZwqPVv84vzyIvRR2CcRhuJi6MJSnI66zi2a0_45sb_yCYuuWabW1tUtnqlGBV2yAILkk_AioUfSNlI70MAOv3q37SU9e3rAeMT6x9ffnSlJv_FXHQCxJFK22zBC1H8SWIjdIkAsdAqrRUDFRETHjnFwl8l9gc2c8o199JlSZPeUE2PFW60FfL9gJlhZpQPSHnmCNQJgJmhgkpUPt9xmap0Fj4nus"
         />
 
         <HabitatLink
-          href="/habitats/desert"
-          title="Arid"
-          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuAogrWseSMkAr8N9CURoBnn8k8Xdz4WxCUyJ0p9dvzuwDIe5SpFJp9dHxNSSix2VsUlNF4h3K8DxcATpYjiS91iG5Fy3DDGOYEKdZG7Dl0rTbwAiv-qRXMrmD2OBaL-QjSpvMuPksuuCBlodhsmNQxCLINiZQ5snDxYeo6PrY224wdch3iqKhccszU2vvJx_2yNtaHhRD-npafZkdn112eahOCbCo4zYxFpy8gboah60zOWgv5MsQrddiW8_5PyJV5Qj3ccCY7TwyCU"
-          priority={true}
+          href="/habitats#wetlands-waters"
+          title="Wetlands & Waters"
+          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuA6BdToWbtZrZ-jAnOQhhLAqlLHT3UF2zyWo2AyQNm2XCmo3YVcb74p77xnwo0jfeWyZv2OzijlAYv0u6uhkYtZN1noIjkn9c8-uUPGluFExvOBl8EMqBS52M_rwKu-o7MPyfPX4m613PVdAWvlYV5h-XQ64X8pgGoNmBs0nnJgbP_KJlTmAZAJ_l4yPtQ382YDL32PUkNryqTFtnQ5uPnc7KivNb9rW91d5ds3NZsYPuyoxyOl097KF-_lz9DaCJcs7yEi8wY0jAc"
         />
 
         <HabitatLink
-          href="/habitats/ocean"
-          title="Ocean"
-          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuBtikfaylVWkpMJG2TCSL7fdCamoM-0r4EokYIhXmLcG_nOkyiRi0oMunV8PFSSQVocHo69duarlNUR8BtOmv0DUQgAdDRdwh37wUYwI4Bx34bXBg_RKUmeP17s2LHA3O_S_RRLrUL_6tZFmwhP3MOlOkAYv8PQBGH9GNf4Y7LHPoUCO58BoREJsuiIsDhfWp-65HCqTblXXfmYpoK2sXqmveEG-GuFD_1JQiMg-bvqP4vycyuEQhOF--ctr8H7qVIFD3iU7W377yFe"
-          priority={true}
+          href="/habitats#deserts-drylands"
+          title="Deserts & Drylands"
+          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuBU2lhd6d63ZL5hLL2-ngN1FqzPSkVo_pK8QvwWAkaF1h3yfo_EuIUeYGil-MB4yNa2Bwdzj3MeFzBHjlcIqA84ez5U400cxfxPhmq9m9wGcVQnNrQHhh--j5YgyHwiNxCTuUhFkxZPUjMbsfL2wSG482lKSoMaQOxiyAAh2nc0-iSWl1Y5PtwpDzkitZgG3yXs8GJ5R8qSXahBJg5PsEvRcMMFGnpX4x03GVaGCRjggd5xXDdB8A0F-p-BwLp4HbclSo3u2l48o18"
+        />
+
+        <HabitatLink
+          href="/habitats#polar-tundra"
+          title="Polar & Tundra"
+          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuBLxP2iQKTKfBFPHJGFvREaYpyzsmd9h3MvQP4Onz_ngMNpJFZRYiYiPaFlpHc-1CmdP1vVmKDM1lygIWaXa5fYlosnYdxEJ8t0c9RhtzTPiShRr0p9v6qLZ8QdJ9_jcCRCBzo--8sHtkVDqCbQ24B81KsBTHT2k5CwTBi25SavohRI8TreMAsTytM_HS6v32gGCE2Q6DvVzXzH2_FLX9gVL16ftMQ_R45_Zy49_r2wcuTy8raOUloeWdFhjsFzRHNUhbPnrnQRkYM"
+        />
+
+        <HabitatLink
+          href="/habitats#mountains-highlands"
+          title="Mountains & Highlands"
+          imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuC_n3ZXYb8kg2-ubo32fpKrktkMIXqOjZ2NkRjMKd03U81szS2iCYPDWMz0oAtKcym6aCb0wjP6Xh9obNhe_m8VIQG0yEk8IiaFqNrWtlaLtc2l4-FC5ibH4Dufw-YvFzzh7ArWwANlFmEJrAMUJ0d7pAtDJCAgLVxpOFq9cDiifnWiUSe3qed3OiiKP5gw2GXLGggqC_M50ew7Fb1T8IpuDLk0M6xOaUf-DlyXemz6l4UcTUvOyxsN-d3__R71zpcY17_bE8jrhMU"
         />
       </div>
     </section>
@@ -49,30 +57,28 @@ interface HabitatLinkProps {
   href: string;
   title: string;
   imageSrc: string;
-  priority?: boolean;
 }
 
 /**
  * Sub-component for individual habitat links.
  * DRY principle: extracted repeating JSX.
  */
-function HabitatLink({ href, title, imageSrc, priority }: HabitatLinkProps) {
+function HabitatLink({ href, title, imageSrc }: HabitatLinkProps) {
   return (
     <Link
       href={href}
       className={cn(
-        "relative h-48 rounded-[1.5rem] overflow-hidden group cursor-pointer block"
+        "relative h-40 rounded-[1.5rem] overflow-hidden group cursor-pointer block border border-outline-variant/10 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.03)]"
       )}
     >
       <ImageWithSkeleton
-        alt={`${title} Habitat`}
+        alt={`${title} Biome`}
         src={imageSrc}
-        priority={priority}
         className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
         containerClassName="absolute inset-0"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-5">
-        <p className="text-white font-bold text-lg font-headline">{title}</p>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex items-end p-4">
+        <p className="text-white font-bold text-sm md:text-base font-headline leading-tight">{title}</p>
       </div>
     </Link>
   );

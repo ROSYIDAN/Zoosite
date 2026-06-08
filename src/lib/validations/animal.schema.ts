@@ -14,7 +14,7 @@ export const listAnimalsQuerySchema = z.object({
     .pipe(z.number().int().positive()),
   diet: z.string().optional(),
   search: z.string().optional(),
-  sort: z.enum(["name", "scientific_name", "created_at"]).optional(),
+  sort: z.enum(["name", "scientific_name", "created_at", "is_visible"]).optional(),
   order: z.enum(["asc", "desc"]).optional(),
 });
 

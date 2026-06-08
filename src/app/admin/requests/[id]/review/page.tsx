@@ -58,7 +58,7 @@ export default async function RequestReviewPage({
     conservation_status: request.conservation_status || "Least Concern",
     predators: request.predators || "",
     image: request.image_url || "",
-    image_source: "Community Request",
+    image_source: request.image_source || "Community Request",
     tags: request.tags || [],
     countries: request.countries || [],
     habitats: request.habitats || [],

@@ -294,6 +294,7 @@ model animal_requests {
   animal_name         String        @db.VarChar(255)
   image_url           String?       @db.Text
   image_public_id     String?       @db.VarChar(255) // For Cloudinary deletion
+  image_source        String?       @db.VarChar(255) // Attribution: "AI Generated", "Public Domain", etc.
 
   // ── Full Detail Fields (Optional for Quick) ──
   scientific_name     String?       @db.VarChar(255)

@@ -5,6 +5,7 @@ export const requestAnimalSchema = z.object({
   animal_name: z.string().min(1, "Common name is required"),
   image_url: z.string().url("Please provide a valid image URL").optional().nullable(),
   image_public_id: z.string().optional().nullable(),
+  image_source: z.string().optional().nullable(),
 
   // ── Optional for QUICK, but used for FULL_DETAIL ──
   scientific_name: z.string().optional().nullable(),

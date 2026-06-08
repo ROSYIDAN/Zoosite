@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { buildLocalImageUrl, checkLocalImageExists } from "@/lib/image-utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import DashboardLayout from "@/components/layouts/dashboard/dashboard-layout";
 import NavigationBreadcrumbs from "@/components/breadcrumbs/NavigationBreadcrumbs";
 import AnimalCardGrid from "@/components/grid/animal-card-grid";
 
@@ -18,10 +19,10 @@ export default async function HabitatDetailPage({
 
   const habitatData = await prisma.habitat.findFirst({
     where: { 
-        habitat_name: {
-            equals: habitatName,
-            mode: 'insensitive'
-        }
+      habitat_name: {
+        equals: habitatName,
+        mode: 'insensitive'
+      }
     },
     include: {
       animal_environment: {
@@ -74,26 +75,46 @@ export default async function HabitatDetailPage({
     });
 
   return (
-    <div className="p-8">
-      <NavigationBreadcrumbs currentPageLabel={habitatName} className="mb-8" />
-      <div className="mb-8">
-        <div className="flex items-center gap-4">
-          <h1 className="text-4xl font-bold font-headline text-primary lowercase capitalize">{habitatName}</h1>
-          <span className="material-symbols-outlined text-4xl text-primary opacity-20">eco</span>
-        </div>
-        <p className="text-on-surface-variant mt-2 font-medium">
+    <DashboardLayout>
+      <div className="space-y-8 max-w-[1440px] mx-auto">
+        {/* Breadcrumbs & Header section */}
+        <div className="flex flex-col gap-4">
+          <NavigationBreadcrumbs currentPageLabel={habitatName} />
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-extrabold tracking-tight text-primary dark:text-[#d0e8c5] font-headline lowercase capitalize">
+              {habitatName}
+            </h1>
+            <span className="material-symbols-outlined text-[24px] text-primary opacity-40">eco</span>
+          </div>
+          <p className="text-sm text-[#1a1c19]/60 dark:text-[#fafaf5]/60 max-w-2xl font-['Manrope']">
             {animals.length} species documented within this environment.
-        </p>
-      </div>
-
-      <AnimalCardGrid animals={animals} currentPageLabel={habitatName} />
-
-      {animals.length === 0 && (
-        <div className="text-center py-20 bg-surface-container-low rounded-3xl border border-dashed border-outline-variant/30">
-          <span className="material-symbols-outlined text-6xl text-on-surface-variant opacity-20 font-variation-settings-fill">eco</span>
-          <p className="mt-4 text-on-surface-variant font-medium">No animals documented for this ecosystem yet.</p>
+          </p>
         </div>
-      )}
-    </div>
+
+        {/* Species grid layout */}
+        <AnimalCardGrid animals={animals} currentPageLabel={habitatName} />
+
+        {animals.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-white dark:bg-[#232621] rounded-3xl p-8 border border-outline-variant/10 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+            <span className="material-symbols-outlined text-4xl text-primary opacity-40">eco</span>
+            <div>
+              <p className="text-lg font-semibold text-[#1a1c19]">No species documented yet</p>
+              <p className="text-sm text-[#1a1c19]/60">There are no animals cataloged for this environment yet.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Back navigation */}
+        <div className="pt-4">
+          <Link
+            href="/habitats"
+            className="text-primary hover:underline flex items-center gap-2 font-medium font-['Manrope'] text-sm"
+          >
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to Biome Explorer
+          </Link>
+        </div>
+      </div>
+    </DashboardLayout>
   );
 }

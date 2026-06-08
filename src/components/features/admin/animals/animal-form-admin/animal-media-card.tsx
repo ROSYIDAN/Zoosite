@@ -70,6 +70,26 @@ export default function AnimalMediaCard({ register, setValue, watch, errors, com
           {errors.image_source && (
             <p className="text-red-500 text-[11px] px-1">{errors.image_source.message}</p>
           )}
+
+          <label className="flex items-center gap-2.5 cursor-pointer select-none pt-1">
+            <input
+              type="checkbox"
+              checked={watch("image_source") === "AI Generated"}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setValue("image_source", "AI Generated", { shouldDirty: true });
+                } else {
+                  if (watch("image_source") === "AI Generated") {
+                    setValue("image_source", "", { shouldDirty: true });
+                  }
+                }
+              }}
+              className="w-4 h-4 rounded border-[#c2c9bb] text-[#2d5a27] focus:ring-[#2d5a27]/30 cursor-pointer"
+            />
+            <span className="text-xs text-[#1a1c19]/70 font-semibold font-['Manrope']">
+              This image is AI-generated
+            </span>
+          </label>
         </div>
       </div>
     </section>

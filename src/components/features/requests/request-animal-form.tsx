@@ -49,6 +49,7 @@ export default function RequestAnimalForm({ classes, initialRejectionCount = 0, 
     handleClearImage,
     onSubmit,
     isUnchanged,
+    watch,
   } = useRequestAnimalForm();
 
   if (isBanned) {
@@ -131,6 +132,9 @@ export default function RequestAnimalForm({ classes, initialRejectionCount = 0, 
             isUploading={isUploading}
             onUpload={handleImageUpload}
             onClear={handleClearImage}
+            register={register}
+            setValue={setValue}
+            watch={watch}
           />
         </div>
 

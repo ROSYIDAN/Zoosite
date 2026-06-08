@@ -10,7 +10,7 @@ export default async function AdminAnimalListPage({
   searchParams: Promise<{
     page?: string;
     search?: string;
-    sort?: "name" | "scientific_name" | "created_at";
+    sort?: "name" | "scientific_name" | "created_at" | "is_visible";
     order?: "asc" | "desc";
   }>;
 }) {

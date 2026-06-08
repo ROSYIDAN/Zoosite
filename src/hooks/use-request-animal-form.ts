@@ -11,6 +11,7 @@ const hasChanged = (newData: any, oldData: any) => {
     "request_type",
     "animal_name",
     "image_url",
+    "image_source",
     "scientific_name",
     "family",
     "genus",
@@ -78,6 +79,7 @@ export function useRequestAnimalForm() {
       animal_name: "",
       image_url: "",
       image_public_id: "",
+      image_source: "",
       scientific_name: "",
       family: "",
       genus: "",
@@ -136,6 +138,7 @@ export function useRequestAnimalForm() {
           setValue("conservation_status", data.conservation_status || "");
           setValue("predators", data.predators || "");
           setValue("synonyms", data.synonyms || "");
+          setValue("image_source", data.image_source || "");
 
           localStorage.removeItem("resubmit_animal_request");
           toast.success("Loaded your previous request. Please fix any errors and submit!");
@@ -270,5 +273,6 @@ export function useRequestAnimalForm() {
     handleClearImage,
     onSubmit,
     isUnchanged,
+    watch,
   };
 }
