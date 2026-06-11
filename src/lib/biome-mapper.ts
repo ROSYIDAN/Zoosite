@@ -36,12 +36,20 @@ export const BIOMES = [
     keywords: ["savanna", "prairie", "steppe", "meadow", "plains", "grassland"]
   },
   {
-    id: "wetlands-waters",
-    title: "Wetlands & Waters",
+    id: "wetlands",
+    title: "Wetlands",
     imageSrc: "https://lh3.googleusercontent.com/aida-public/AB6AXuA6BdToWbtZrZ-jAnOQhhLAqlLHT3UF2zyWo2AyQNm2XCmo3YVcb74p77xnwo0jfeWyZv2OzijlAYv0u6uhkYtZN1noIjkn9c8-uUPGluFExvOBl8EMqBS52M_rwKu-o7MPyfPX4m613PVdAWvlYV5h-XQ64X8pgGoNmBs0nnJgbP_KJlTmAZAJ_l4yPtQ382YDL32PUkNryqTFtnQ5uPnc7KivNb9rW91d5ds3NZsYPuyoxyOl097KF-_lz9DaCJcs7yEi8wY0jAc",
+    icon: "waves",
+    badge: "Swamp & marshland species",
+    keywords: ["swamp", "marsh", "mangrove", "wetland", "bog", "floodplain", "peatland"]
+  },
+  {
+    id: "waters",
+    title: "Waters",
+    imageSrc: "/waters.png",
     icon: "water",
-    badge: "Aquatic & semi-aquatic life",
-    keywords: ["swamp", "marsh", "river", "lake", "mangrove", "coast", "ocean", "reef", "marine", "freshwater", "water", "shore", "sea", "wetland", "coastal"]
+    badge: "Aquatic & marine life",
+    keywords: ["river", "lake", "ocean", "reef", "marine", "freshwater", "water", "sea", "coast", "coastal", "shore", "estuary", "pelagic", "deep-sea", "bay", "fjord", "pond", "stream", "channel"]
   },
   {
     id: "deserts-drylands",
@@ -108,7 +116,7 @@ export async function getBiomeExplorerData(): Promise<BiomeData[]> {
   for (const h of habitats) {
     const habitatName = h.habitat_name!;
     const normalizedName = habitatName.toLowerCase();
-    
+
     let matched = false;
     for (const biome of biomesData) {
       const def = BIOMES.find((b) => b.id === biome.id)!;
@@ -117,7 +125,7 @@ export async function getBiomeExplorerData(): Promise<BiomeData[]> {
         matched = true;
       }
     }
-    
+
     // Fallback: If a database habitat doesn't match any keyword, map it to Forests
     if (!matched) {
       const forests = biomesData.find((b) => b.id === "forests")!;
@@ -128,7 +136,7 @@ export async function getBiomeExplorerData(): Promise<BiomeData[]> {
   // Calculate unique animal counts & select featured animals for each biome
   for (const biome of biomesData) {
     const animalMap = new Map<string, any>();
-    
+
     const biomeHabNames = new Set(biome.habitats.map((bh) => bh.name.toLowerCase()));
     const matchedHabitats = habitats.filter((h) => biomeHabNames.has(h.habitat_name!.toLowerCase()));
 
@@ -145,13 +153,13 @@ export async function getBiomeExplorerData(): Promise<BiomeData[]> {
     // Select featured animals
     const allAnimals = Array.from(animalMap.values());
     const featured: FeaturedAnimal[] = [];
-    
+
     for (const animal of allAnimals) {
       if (featured.length >= 3) break;
-      
+
       const imgbbUrl = animal.animal_images?.find((img: any) => img.image_url?.includes("ibb.co"))?.image_url;
       const imageUrl = imgbbUrl || buildLocalImageUrl(animal.canonical_slug) || animal.animal_images?.[0]?.image_url;
-      
+
       if (imageUrl) {
         featured.push({
           name: animal.animal_name || "Unknown",
@@ -160,13 +168,13 @@ export async function getBiomeExplorerData(): Promise<BiomeData[]> {
         });
       }
     }
-    
+
     // Fallback if needed
     if (featured.length < 3) {
       for (const animal of allAnimals) {
         if (featured.length >= 3) break;
         if (featured.some((f) => f.slug === animal.canonical_slug)) continue;
-        
+
         featured.push({
           name: animal.animal_name || "Unknown",
           slug: animal.canonical_slug || "",

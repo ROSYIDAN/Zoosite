@@ -35,7 +35,13 @@ const BIOME_UI_THEMES: Record<
     badgeText: "text-amber-800 dark:text-amber-300",
     tagClass: "bg-amber-50 dark:bg-amber-950/10 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/30 hover:bg-amber-100/50",
   },
-  "wetlands-waters": {
+  wetlands: {
+    iconBg: "bg-teal-600 dark:bg-teal-700",
+    badgeBg: "bg-teal-50 dark:bg-teal-950/20",
+    badgeText: "text-teal-800 dark:text-teal-300",
+    tagClass: "bg-teal-50 dark:bg-teal-950/10 text-teal-700 dark:text-teal-400 border-teal-100 dark:border-teal-900/30 hover:bg-teal-100/50",
+  },
+  waters: {
     iconBg: "bg-blue-600 dark:bg-blue-700",
     badgeBg: "bg-blue-50 dark:bg-blue-950/20",
     badgeText: "text-blue-800 dark:text-blue-300",

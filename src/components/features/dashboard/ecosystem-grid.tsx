@@ -12,7 +12,7 @@ export default function EcosystemGrid() {
       <h2 className="text-2xl font-bold tracking-tight text-primary font-headline">
         Biome Explorer
       </h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-6">
         <HabitatLink
           href="/habitats#forests"
           title="Forests"
@@ -26,9 +26,15 @@ export default function EcosystemGrid() {
         />
 
         <HabitatLink
-          href="/habitats#wetlands-waters"
-          title="Wetlands & Waters"
+          href="/habitats#wetlands"
+          title="Wetlands"
           imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuA6BdToWbtZrZ-jAnOQhhLAqlLHT3UF2zyWo2AyQNm2XCmo3YVcb74p77xnwo0jfeWyZv2OzijlAYv0u6uhkYtZN1noIjkn9c8-uUPGluFExvOBl8EMqBS52M_rwKu-o7MPyfPX4m613PVdAWvlYV5h-XQ64X8pgGoNmBs0nnJgbP_KJlTmAZAJ_l4yPtQ382YDL32PUkNryqTFtnQ5uPnc7KivNb9rW91d5ds3NZsYPuyoxyOl097KF-_lz9DaCJcs7yEi8wY0jAc"
+        />
+
+        <HabitatLink
+          href="/habitats#waters"
+          title="Waters"
+          imageSrc="/waters.png"
         />
 
         <HabitatLink
