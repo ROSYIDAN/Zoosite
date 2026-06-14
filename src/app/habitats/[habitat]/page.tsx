@@ -26,6 +26,11 @@ export default async function HabitatDetailPage({
     },
     include: {
       animal_environment: {
+        where: {
+          animals: {
+            is_visible: true
+          }
+        },
         select: {
           animals: {
             select: {

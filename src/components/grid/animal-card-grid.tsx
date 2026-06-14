@@ -53,6 +53,7 @@ export default function AnimalCardGrid({ animals, currentPageLabel }: AnimalCard
                   fallbackSrc="/static_image.png"
                   alt={animal.name}
                   priority={idx < 4}
+                  isCard={true}
                   className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
                   containerClassName="absolute inset-0"
                 />

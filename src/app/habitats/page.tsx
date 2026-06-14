@@ -94,7 +94,15 @@ export default async function HabitatsPage({ searchParams }: PageProps) {
         id: true,
         habitat_name: true,
         _count: {
-          select: { animal_environment: true },
+          select: {
+            animal_environment: {
+              where: {
+                animals: {
+                  is_visible: true
+                }
+              }
+            }
+          },
         },
       },
       orderBy: {
@@ -123,9 +131,9 @@ export default async function HabitatsPage({ searchParams }: PageProps) {
               <span className="text-primary font-bold">{activeBiome.title}</span>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className={cn("p-2 rounded-2xl text-white flex items-center justify-center shadow-md", theme.iconBg)}>
-                <span className="material-symbols-outlined text-[24px]">
+            <div className="p-6 bg-white/40 dark:bg-[#232621]/40 rounded-r-3xl rounded-l-lg border border-[#1a1c19]/5 dark:border-white/5 border-l-4 border-l-primary dark:border-l-[#d0e8c5] backdrop-blur-sm shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] flex items-center gap-5">
+              <div className={cn("p-3 rounded-2xl text-white flex items-center justify-center shadow-md shrink-0", theme.iconBg)}>
+                <span className="material-symbols-outlined text-[28px]">
                   {activeBiome.icon}
                 </span>
               </div>
@@ -133,7 +141,7 @@ export default async function HabitatsPage({ searchParams }: PageProps) {
                 <h1 className="text-3xl font-extrabold tracking-tight text-primary dark:text-[#d0e8c5] font-headline">
                   {activeBiome.title} Habitats
                 </h1>
-                <p className="text-sm text-[#1a1c19]/60 dark:text-[#fafaf5]/60 mt-1 max-w-2xl font-['Manrope']">
+                <p className="text-sm text-[#1a1c19]/85 dark:text-[#fafaf5]/85 mt-1 max-w-2xl font-['Manrope'] leading-relaxed">
                   Explore all documented micro-environments under the {activeBiome.title.toLowerCase()} biome.
                 </p>
               </div>
@@ -188,11 +196,11 @@ export default async function HabitatsPage({ searchParams }: PageProps) {
         {/* Breadcrumbs & Title header */}
         <div className="flex flex-col gap-4">
           <NavigationBreadcrumbs currentPageLabel="Biome Explorer" />
-          <div>
+          <div className="p-6 bg-white/40 dark:bg-[#232621]/40 rounded-r-3xl rounded-l-lg border border-[#1a1c19]/5 dark:border-white/5 border-l-4 border-l-primary dark:border-l-[#d0e8c5] backdrop-blur-sm shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)]">
             <h1 className="text-3xl font-extrabold tracking-tight text-primary dark:text-[#d0e8c5] font-headline">
               Biome Explorer
             </h1>
-            <p className="text-sm text-[#1a1c19]/60 dark:text-[#fafaf5]/60 mt-1 max-w-2xl font-['Manrope']">
+            <p className="text-sm text-[#1a1c19]/85 dark:text-[#fafaf5]/85 mt-2 max-w-3xl font-['Manrope'] leading-relaxed">
               Explore broad biome categories, habitat examples, and featured wildlife across the animal archive.
             </p>
           </div>
@@ -200,7 +208,7 @@ export default async function HabitatsPage({ searchParams }: PageProps) {
 
         {/* Biome cards grid layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {biomes.map((biome) => {
+          {biomes.map((biome, index) => {
             const theme = BIOME_UI_THEMES[biome.id] || BIOME_UI_THEMES.forests;
             const visibleHabitats = biome.habitats.slice(0, 3);
             const remainingCount = biome.habitats.length - 3;
@@ -216,8 +224,7 @@ export default async function HabitatsPage({ searchParams }: PageProps) {
                   <ImageWithSkeleton
                     alt={biome.title}
                     src={biome.imageSrc}
-                    loading="eager"
-                    fetchPriority="high"
+                    priority={index < 3}
                     className="w-full h-full object-cover"
                     containerClassName="absolute inset-0"
                   />

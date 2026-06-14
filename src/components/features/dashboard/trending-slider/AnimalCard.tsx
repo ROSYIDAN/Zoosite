@@ -25,6 +25,7 @@ export default function AnimalCard({ animal, priority }: AnimalCardProps) {
             alt={animal.name}
             src={animal.image}
             priority={priority}
+            isCard={true}
             fallbackSrc="/static_image.png"
             className="w-full h-full object-cover rounded-xl"
             containerClassName="w-full h-full rounded-xl overflow-hidden"
