@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { buildLocalImageUrl, checkLocalImageExists } from "@/lib/image-utils";
+import { buildLocalImageUrl, getPreferredAnimalImageUrl, checkLocalImageExists } from "@/lib/image-utils";
 import { notFound } from "next/navigation";
 import NavigationBreadcrumbs from "@/components/breadcrumbs/NavigationBreadcrumbs";
 import AnimalCardGrid from "@/components/grid/animal-card-grid";
@@ -65,24 +65,20 @@ export default async function RegionDetailPage({
 
   const filterResults = await Promise.all(
     rawAnimals.map(async (animal) => {
-      const hasImgbb = animal.animal_images?.some((img: any) => img.image_url?.includes("ibb.co"));
-      const exists = hasImgbb || await checkLocalImageExists(animal.id);
-      return { animal, exists };
+      const hasImage = animal.animal_images?.some((img: any) => img.image_url) || await checkLocalImageExists(animal.id);
+      return { animal, exists: hasImage };
     })
   );
 
   const animals = filterResults
     .filter((r) => r.exists)
     .map((r) => r.animal)
-    .map((animal) => {
-      const imgbbUrl = animal.animal_images?.find((img: any) => img.image_url?.includes("ibb.co"))?.image_url;
-      return {
-        id: animal.id,
-        name: animal.animal_name || "Unknown",
-        slug: animal.canonical_slug || "",
-        image: imgbbUrl || buildLocalImageUrl(animal.canonical_slug) || undefined,
-      };
-    });
+    .map((animal) => ({
+      id: animal.id,
+      name: animal.animal_name || "Unknown",
+      slug: animal.canonical_slug || "",
+      image: getPreferredAnimalImageUrl(animal.animal_images, animal.canonical_slug) || buildLocalImageUrl(animal.canonical_slug) || undefined,
+    }));
 
   return (
     <div className="p-8">

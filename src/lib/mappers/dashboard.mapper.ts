@@ -1,4 +1,4 @@
-import { buildLocalImageUrl } from "../image-utils";
+import { buildLocalImageUrl, getPreferredAnimalImageUrl } from "../image-utils";
 
 // ── Types for raw Prisma select results ──
 
@@ -60,11 +60,12 @@ export function toBrowseHabitatItem(raw: RawBrowseHabitat) {
 }
 
 export function toExploreAnimalItem(raw: RawExploreAnimal, regionContext?: string) {
-  const imgbbUrl = raw.animal_images?.find(img => img.image_url?.includes("ibb.co"))?.image_url;
+  const imageUrl = getPreferredAnimalImageUrl(raw.animal_images, raw.canonical_slug) || buildLocalImageUrl(raw.canonical_slug);
+
   return {
     id: raw.id,
     name: raw.animal_name || "Unknown",
-    imageUrl: imgbbUrl || buildLocalImageUrl(raw.canonical_slug),
+    imageUrl,
     habitats: raw.animal_environment
       .map((env) => env.habitat?.habitat_name)
       .filter(Boolean),
@@ -73,7 +74,7 @@ export function toExploreAnimalItem(raw: RawExploreAnimal, regionContext?: strin
 }
 
 export function toTrendingAnimalItem(raw: RawTrendingAnimal, detail: string | undefined) {
-  const imgbbUrl = raw.animal_images?.find(img => img.image_url?.includes("ibb.co"))?.image_url;
+  const imageUrl = getPreferredAnimalImageUrl(raw.animal_images, raw.canonical_slug) || buildLocalImageUrl(raw.canonical_slug);
   const baseResult: any = {
     id: raw.id,
     slug: raw.canonical_slug,
@@ -82,7 +83,7 @@ export function toTrendingAnimalItem(raw: RawTrendingAnimal, detail: string | un
       .map((env) => env.habitat?.habitat_name)
       .filter(Boolean),
     ordo: raw.ordo,
-    imageUrl: imgbbUrl || buildLocalImageUrl(raw.canonical_slug),
+    imageUrl,
   };
 
   if (detail === "full" && raw.dataset_animals && raw.dataset_animals.length > 0) {

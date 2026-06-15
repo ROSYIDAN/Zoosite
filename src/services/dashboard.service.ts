@@ -49,9 +49,8 @@ export const dashboardService = {
     const raw = await dashboardRepo.getAnimalsByHabitat(query.habitat);
     const filterResults = await Promise.all(
       raw.map(async (a: any) => {
-        const hasImgbb = a.animal_images?.some((img: any) => img.image_url?.includes("ibb.co"));
-        const exists = hasImgbb || await checkLocalImageExists(a.id);
-        return { a, exists };
+        const hasImage = a.animal_images?.some((img: any) => img.image_url) || await checkLocalImageExists(a.id);
+        return { a, exists: hasImage };
       })
     );
     const filtered = filterResults.filter((r) => r.exists).map((r) => r.a);
@@ -62,9 +61,8 @@ export const dashboardService = {
     const raw = await dashboardRepo.getAnimalsByRegion(query.region);
     const filterResults = await Promise.all(
       raw.map(async (a: any) => {
-        const hasImgbb = a.animal_images?.some((img: any) => img.image_url?.includes("ibb.co"));
-        const exists = hasImgbb || await checkLocalImageExists(a.id);
-        return { a, exists };
+        const hasImage = a.animal_images?.some((img: any) => img.image_url) || await checkLocalImageExists(a.id);
+        return { a, exists: hasImage };
       })
     );
     const filtered = filterResults.filter((r) => r.exists).map((r) => r.a);
@@ -99,10 +97,9 @@ export const dashboardService = {
 
     for (const row of randomIds) {
       const animal = animalsWithImages.find(a => a.id === row.id);
-      const hasImgbb = animal?.animal_images?.some((img: any) => img.image_url?.includes("ibb.co"));
-      const exists = hasImgbb || await checkLocalImageExists(row.id);
+      const hasImage = animal?.animal_images?.some((img: any) => img.image_url) || await checkLocalImageExists(row.id);
 
-      if (exists) {
+      if (hasImage) {
         validIds.push(row.id);
       }
       

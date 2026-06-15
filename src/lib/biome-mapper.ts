@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { buildLocalImageUrl } from "@/lib/image-utils";
+import { getPreferredAnimalImageUrl } from "@/lib/image-utils";
 
 export interface FeaturedAnimal {
   name: string;
@@ -158,8 +158,7 @@ export async function getBiomeExplorerData(): Promise<BiomeData[]> {
     for (const animal of allAnimals) {
       if (featured.length >= 3) break;
 
-      const imgbbUrl = animal.animal_images?.find((img: any) => img.image_url?.includes("ibb.co"))?.image_url;
-      const imageUrl = imgbbUrl || buildLocalImageUrl(animal.canonical_slug) || animal.animal_images?.[0]?.image_url;
+      const imageUrl = getPreferredAnimalImageUrl(animal.animal_images, animal.canonical_slug) || animal.animal_images?.[0]?.image_url;
 
       if (imageUrl) {
         featured.push({

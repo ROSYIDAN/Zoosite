@@ -1,4 +1,4 @@
-import { buildLocalImageUrl } from "../image-utils";
+import { buildLocalImageUrl, getPreferredAnimalImageUrl } from "../image-utils";
 
 // ── Types for raw Prisma select results ──
 
@@ -70,8 +70,7 @@ type RawCreatedAnimal = {
  * Maps the raw Prisma detail result to a clean, nested API response shape.
  */
 export function toAnimalDetail(raw: RawAnimalDetail) {
-  const imgbbUrl = raw.animal_images?.find(img => img.image_url?.includes("ibb.co"))?.image_url;
-  const imageUrl = imgbbUrl || buildLocalImageUrl(raw.canonical_slug);
+  const imageUrl = getPreferredAnimalImageUrl(raw.animal_images, raw.canonical_slug) || buildLocalImageUrl(raw.canonical_slug);
 
   return {
     id: raw.id,
@@ -131,14 +130,13 @@ export function toAnimalDetail(raw: RawAnimalDetail) {
  * Maps a list-query result to a concise list item.
  */
 export function toAnimalListItem(raw: RawAnimalListItem) {
-  const imgbbUrl = raw.animal_images?.find(img => img.image_url?.includes("ibb.co"))?.image_url;
   return {
     id: raw.id,
     slug: raw.canonical_slug,
     name: raw.animal_name,
     scientific_name: raw.scientific_name,
     family: raw.family,
-    image: imgbbUrl || buildLocalImageUrl(raw.canonical_slug),
+    image: getPreferredAnimalImageUrl(raw.animal_images, raw.canonical_slug) || buildLocalImageUrl(raw.canonical_slug),
     is_visible: raw.is_visible ?? true,
   };
 }

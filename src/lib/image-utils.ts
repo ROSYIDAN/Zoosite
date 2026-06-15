@@ -5,9 +5,26 @@ import { IMAGES_DIR, SUPPORTED_EXTENSIONS } from "./constants";
 /**
  * Builds the local API URL for an animal image based on its slug.
  */
+type ImageUrlRecord = {
+  image_url: string | null | undefined;
+};
+
 export function buildLocalImageUrl(slug: string | null | undefined): string | null {
   if (!slug) return null;
   return `/api/animals/${slug}/image`;
+}
+
+export function getPreferredAnimalImageUrl(
+  images: ImageUrlRecord[] | undefined,
+  slug: string | null | undefined
+): string | null {
+  const adjustedImage = images?.find((image) => image.image_url?.includes("#"));
+  if (adjustedImage?.image_url) return adjustedImage.image_url;
+
+  const imgbbImage = images?.find((image) => image.image_url?.includes("ibb.co"));
+  if (imgbbImage?.image_url) return imgbbImage.image_url;
+
+  return buildLocalImageUrl(slug) ?? images?.[0]?.image_url ?? null;
 }
 
 /**
