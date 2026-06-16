@@ -33,5 +33,6 @@ export interface AnimalData {
   distribution: AnimalDistribution[];
   images: string[];
   image_sources?: (string | null)[];
+  image_photographers?: (string | null)[];
   tags: { name: string; color: string | null }[];
 }

@@ -91,7 +91,7 @@ export default function ImageWithSkeleton({
             props.unoptimized
           }
           priority={isPriority}
-          loading={isPriority ? "eager" : loading}
+          loading={isPriority ? "eager" : (loading ?? "lazy")}
           fetchPriority={isPriority ? "high" : fetchPriority}
           style={mergedStyle}
           {...props}

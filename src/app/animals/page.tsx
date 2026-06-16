@@ -1,4 +1,3 @@
-import React from "react";
 import DashboardLayout from "@/components/layouts/dashboard/dashboard-layout";
 import AnimalCardGrid from "@/components/grid/animal-card-grid";
 import { animalService } from "@/services/animal.service";
@@ -12,21 +11,32 @@ interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+interface ArchiveAnimal {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string;
+}
+
+const DEFAULT_PAGE = 1;
+
 export default async function AnimalsArchivePage({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
   const search = typeof resolvedSearchParams.search === "string" ? resolvedSearchParams.search : undefined;
+  const pageParam = typeof resolvedSearchParams.page === "string" ? Number.parseInt(resolvedSearchParams.page, 10) : undefined;
+  const initialPage = pageParam !== undefined && Number.isFinite(pageParam) && pageParam > 0 ? pageParam : DEFAULT_PAGE;
 
   const result = await animalService.list({
     limit: 1000,
-    page: 1,
+    page: DEFAULT_PAGE,
     search: search,
   });
 
-  const animals = result.data.map((item: any) => ({
+  const animals: ArchiveAnimal[] = result.data.map((item) => ({
     id: item.id,
     name: item.name || "Unknown Species",
     slug: item.slug || "",
-    image: item.image,
+    image: item.image ?? undefined,
   }));
 
   return (
@@ -50,7 +60,7 @@ export default async function AnimalsArchivePage({ searchParams }: PageProps) {
             </div>
           </div>
         ) : (
-          <AnimalCardGrid animals={animals} currentPageLabel="Archive" />
+          <AnimalCardGrid animals={animals} currentPageLabel="Archive" initialPage={initialPage} search={search} />
         )}
       </div>
     </DashboardLayout>

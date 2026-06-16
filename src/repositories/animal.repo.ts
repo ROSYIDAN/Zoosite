@@ -88,7 +88,7 @@ const animalDetailSelect = {
   class_id: true,
   is_visible: true,
   animal_images: {
-    select: { image_url: true, source: true },
+    select: { image_url: true, source: true, photographer_name: true },
   },
   tags: {
     select: { id: true, name: true, slug: true, color: true }
@@ -312,6 +312,7 @@ export const animalRepo = {
             animal_id: animal.id,
             image_url: input.image,
             source: input.image_source || null,
+            photographer_name: input.photographer_name || null,
           },
         });
       }
@@ -487,6 +488,7 @@ export const animalRepo = {
             data: {
               image_url: input.image,
               source: input.image_source || null,
+              photographer_name: input.photographer_name || null,
             },
           });
         } else {

@@ -7,6 +7,7 @@ import AnimalHeader from "@/components/animal_details/AnimalHeader";
 interface AnimalPreviewModalProps {
   imageUrl: string;
   imageSource?: string;
+  photographerName?: string;
   commonName: string;
   scientificName?: string;
   description?: string;
@@ -26,6 +27,7 @@ interface AnimalPreviewModalProps {
 export default function AnimalPreviewModal({
   imageUrl,
   imageSource,
+  photographerName,
   commonName,
   scientificName,
   description,
@@ -157,11 +159,11 @@ export default function AnimalPreviewModal({
                       style={parsed.style}
                     />
                   </div>
-                  {imageSource && (
+                  {(photographerName || imageSource) && (
                     <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20">
                       <p className="text-[8px] text-white/90 font-['Manrope'] font-medium flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[10px]">copyright</span>
-                        {imageSource}
+                        <span className="material-symbols-outlined text-[10px]">person</span>
+                        {photographerName || imageSource}
                       </p>
                     </div>
                   )}

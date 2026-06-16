@@ -77,7 +77,8 @@ export default async function AnimalDetailPage({
           <AnimalImage 
             imageUrl={animalData.images[0]} 
             altText={commonName} 
-            source={animalData.image_sources?.[0]} 
+            source={animalData.image_sources?.[0]}
+            photographerName={animalData.image_photographers?.[0]}
           />
           {session?.user && animalData.images[0] && (
             <div className="absolute top-4 right-4 z-10">

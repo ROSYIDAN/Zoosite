@@ -48,6 +48,7 @@ export default async function EditAnimalPage({
     predators: dataset?.predators || "",
     image: animal.animal_images[0]?.image_url || undefined,
     image_source: animal.animal_images[0]?.source || undefined,
+    photographer_name: animal.animal_images[0]?.photographer_name || undefined,
     tags: animal.tags.map((tag) => tag.name),
     countries: animal.animal_distributions.flatMap((d) => d.countries ? [d.countries.id] : []),
     habitats: animal.animal_environment.flatMap((e) => (e.habitat && e.habitat.habitat_name) ? [e.habitat.habitat_name] : []),

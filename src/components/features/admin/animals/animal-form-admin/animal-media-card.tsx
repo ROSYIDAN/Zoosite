@@ -17,6 +17,7 @@ interface AnimalMediaCardProps {
 
 export default function AnimalMediaCard({ register, setValue, watch, errors, commonName, onPreview, isSafetyBlurEnabled }: AnimalMediaCardProps) {
   const imageUrl = watch("image");
+  const imageSource = watch("image_source");
 
   return (
     <section className="bg-white border border-[#c2c9bb] rounded-2xl p-6 shadow-sm flex flex-col min-h-[480px]">
@@ -52,7 +53,7 @@ export default function AnimalMediaCard({ register, setValue, watch, errors, com
         <div className="space-y-1.5 mt-auto">
           <div className="flex items-center justify-between px-1">
             <label className="text-[11px] font-bold text-[#1a1c19]/50 uppercase tracking-wider">
-              Image Attribution / Source
+              Image Source / Link
             </label>
             <KnowledgeHelper label="Image Source" commonName={commonName} />
           </div>
@@ -71,15 +72,36 @@ export default function AnimalMediaCard({ register, setValue, watch, errors, com
             <p className="text-red-500 text-[11px] px-1">{errors.image_source.message}</p>
           )}
 
-          <label className="flex items-center gap-2.5 cursor-pointer select-none pt-1">
+          <div className="flex items-center justify-between px-1 pt-3">
+            <label className="text-[11px] font-bold text-[#1a1c19]/50 uppercase tracking-wider">
+              Image Photographer
+            </label>
+            <KnowledgeHelper label="Image Photographer" commonName={commonName} />
+          </div>
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-[#1a1c19]/30">
+              person
+            </span>
+            <input
+              type="text"
+              {...register("photographer_name")}
+              placeholder="e.g. John Doe"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#1a1c19]/10 focus:border-[#2d5a27] focus:ring-1 focus:ring-[#2d5a27] outline-none transition-all text-sm font-['Manrope'] bg-[#fafaf5]/50"
+            />
+          </div>
+          {errors.photographer_name && (
+            <p className="text-red-500 text-[11px] px-1">{errors.photographer_name.message}</p>
+          )}
+
+          <label className="flex items-center gap-2.5 cursor-pointer select-none pt-3">
             <input
               type="checkbox"
-              checked={watch("image_source") === "AI Generated"}
+              checked={imageSource === "AI Generated"}
               onChange={(e) => {
                 if (e.target.checked) {
                   setValue("image_source", "AI Generated", { shouldDirty: true });
                 } else {
-                  if (watch("image_source") === "AI Generated") {
+                  if (imageSource === "AI Generated") {
                     setValue("image_source", "", { shouldDirty: true });
                   }
                 }

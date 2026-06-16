@@ -80,6 +80,7 @@ export function mapAnimalToData(animal: RawAnimal): AnimalData {
     })),
     images: animal.animal_images?.map(img => img.image_url).filter(Boolean) as string[] || [buildLocalImageUrl(animal.canonical_slug)],
     image_sources: animal.animal_images?.map(img => img.source) || [],
+    image_photographers: animal.animal_images?.map(img => img.photographer_name) || [],
     tags: (animal.tags || []).map(t => ({ name: t.name, color: t.color }))
   };
 }

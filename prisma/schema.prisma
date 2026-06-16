@@ -38,11 +38,11 @@ model animals {
   dataset_animals      dataset_animals[]
   tags                 tags[]
 
-  contributed_by       String?                @db.Uuid
-  contributor          User?                  @relation("contributed_animals", fields: [contributed_by], references: [id], onDelete: SetNull)
-  animal_requests      animal_requests[]
+  contributed_by  String?           @db.Uuid
+  contributor     User?             @relation("contributed_animals", fields: [contributed_by], references: [id], onDelete: SetNull)
+  animal_requests animal_requests[]
 
-  is_visible           Boolean                @default(true)
+  is_visible Boolean @default(true)
 
   @@index([family, genus, ordo, class_id], map: "idx_animals_taxonomy")
 }
@@ -145,11 +145,12 @@ model tempdata {
 }
 
 model animal_images {
-  animal_id String?  @db.Uuid
-  id        String   @id(map: "animals_image_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  image_url String?
-  source    String?
-  animals   animals? @relation(fields: [animal_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_animals_image_animal")
+  animal_id         String?  @db.Uuid
+  id                String   @id(map: "animals_image_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  image_url         String?
+  source            String?
+  photographer_name String?
+  animals           animals? @relation(fields: [animal_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_animals_image_animal")
 }
 
 // ── Quiz Feature ──
@@ -174,21 +175,21 @@ enum UserRole {
 }
 
 model User {
-  id                   String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id                   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                 String?
-  email                String            @unique
-  emailVerified        DateTime?         @map("email_verified") @db.Timestamp(6)
+  email                String    @unique
+  emailVerified        DateTime? @map("email_verified") @db.Timestamp(6)
   image                String?
-  bio                  String?           @db.VarChar(160)
-  image_position       String?           @default("50% 50%") @db.VarChar(50)
-  image_scale          Float?            @default(1.0)
-  role                 UserRole          @default(USER)
-  createdAt            DateTime          @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt            DateTime          @updatedAt @map("updated_at") @db.Timestamp(6)
-  deletedAt            DateTime?         @map("deleted_at") @db.Timestamp(6)
-  is_request_banned    Boolean           @default(false)
-  request_banned_until DateTime?         @map("request_banned_until") @db.Timestamp(6)
-  rejections_reset_at  DateTime?         @map("rejections_reset_at") @db.Timestamp(6)
+  bio                  String?   @db.VarChar(160)
+  image_position       String?   @default("50% 50%") @db.VarChar(50)
+  image_scale          Float?    @default(1.0)
+  role                 UserRole  @default(USER)
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamp(6)
+  is_request_banned    Boolean   @default(false)
+  request_banned_until DateTime? @map("request_banned_until") @db.Timestamp(6)
+  rejections_reset_at  DateTime? @map("rejections_reset_at") @db.Timestamp(6)
 
   accounts      Account[]
   sessions      Session[]
@@ -249,17 +250,17 @@ model quiz_questions {
   media_url    String?
   created_at   DateTime    @default(now()) @db.Timestamp(6)
 
-  options      quiz_options[]
+  options quiz_options[]
 }
 
 model quiz_options {
-  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  question_id String         @db.Uuid
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  question_id String  @db.Uuid
   label       String
-  is_correct  Boolean        @default(false)
+  is_correct  Boolean @default(false)
   media_url   String?
 
-  question    quiz_questions @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question quiz_questions @relation(fields: [question_id], references: [id], onDelete: Cascade)
 
   @@index([question_id])
 }
@@ -268,7 +269,7 @@ model tags {
   id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name       String    @unique
   slug       String    @unique
-  color      String?   // Optional hex color for the tag badge
+  color      String? // Optional hex color for the tag badge
   created_at DateTime? @default(now()) @db.Timestamp(6)
   animals    animals[]
 }
@@ -286,50 +287,50 @@ enum RequestStatus {
 }
 
 model animal_requests {
-  id                  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  request_type        RequestType
-  status              RequestStatus @default(PENDING)
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  request_type RequestType
+  status       RequestStatus @default(PENDING)
 
   // ── Required Fields (Both Quick and Full) ──
-  animal_name         String        @db.VarChar(255)
-  image_url           String?       @db.Text
-  image_public_id     String?       @db.VarChar(255) // For Cloudinary deletion
-  image_source        String?       @db.VarChar(255) // Attribution: "AI Generated", "Public Domain", etc.
+  animal_name     String  @db.VarChar(255)
+  image_url       String? @db.Text
+  image_public_id String? @db.VarChar(255) // For Cloudinary deletion
+  image_source    String? @db.VarChar(255) // Attribution: "AI Generated", "Public Domain", etc.
 
   // ── Full Detail Fields (Optional for Quick) ──
-  scientific_name     String?       @db.VarChar(255)
-  synonyms            String?       @db.Text
-  family              String?       @db.VarChar(255)
-  genus               String?       @db.VarChar(255)
-  ordo                String?       @db.VarChar(255)
-  class_id            String?       @db.Uuid
-  description         String?       @db.Text
-  description_source  String?       @db.VarChar(255)
-  diet                String?       @db.VarChar(255)
-  lifespan_years      String?       @db.VarChar(100)
-  weight_kg           String?       @db.VarChar(100)
-  height_cm           String?       @db.VarChar(100)
-  avg_speed_kmh       String?       @db.VarChar(100)
-  top_speed_kmh       String?       @db.VarChar(100)
-  social_structure    String?       @db.VarChar(255)
-  conservation_status String?       @db.VarChar(100)
-  predators           String?       @db.Text
-  tags                String[]      // Array of tag names or IDs
-  countries           String[]      // Array of country IDs
-  habitats            String[]      // Array of habitat IDs
+  scientific_name     String?  @db.VarChar(255)
+  synonyms            String?  @db.Text
+  family              String?  @db.VarChar(255)
+  genus               String?  @db.VarChar(255)
+  ordo                String?  @db.VarChar(255)
+  class_id            String?  @db.Uuid
+  description         String?  @db.Text
+  description_source  String?  @db.VarChar(255)
+  diet                String?  @db.VarChar(255)
+  lifespan_years      String?  @db.VarChar(100)
+  weight_kg           String?  @db.VarChar(100)
+  height_cm           String?  @db.VarChar(100)
+  avg_speed_kmh       String?  @db.VarChar(100)
+  top_speed_kmh       String?  @db.VarChar(100)
+  social_structure    String?  @db.VarChar(255)
+  conservation_status String?  @db.VarChar(100)
+  predators           String?  @db.Text
+  tags                String[] // Array of tag names or IDs
+  countries           String[] // Array of country IDs
+  habitats            String[] // Array of habitat IDs
 
   // ── Concurrency & Admin tracking ──
-  review_started      DateTime?     @db.Timestamp(6)
-  reject_reason       String?       @db.Text
-  approved_animal_id  String?       @db.Uuid
-  approved_animal     animals?      @relation(fields: [approved_animal_id], references: [id], onDelete: SetNull)
+  review_started     DateTime? @db.Timestamp(6)
+  reject_reason      String?   @db.Text
+  approved_animal_id String?   @db.Uuid
+  approved_animal    animals?  @relation(fields: [approved_animal_id], references: [id], onDelete: SetNull)
 
   // ── Requester link ──
-  user_id             String        @db.Uuid
-  user                User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id String @db.Uuid
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  created_at          DateTime      @default(now()) @db.Timestamp(6)
-  updated_at          DateTime      @updatedAt @db.Timestamp(6)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @updatedAt @db.Timestamp(6)
 
   @@index([status])
   @@index([user_id])

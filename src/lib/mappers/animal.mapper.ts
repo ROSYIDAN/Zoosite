@@ -11,7 +11,7 @@ type RawAnimalDetail = {
   genus: string | null;
   ordo: string | null;
   is_visible?: boolean;
-  animal_images: { image_url: string | null }[];
+  animal_images: { image_url: string | null; source?: string | null; photographer_name?: string | null }[];
   animal_descriptions: {
     summary: string;
     source: string | null;
@@ -53,7 +53,7 @@ type RawAnimalListItem = {
   ordo: string | null;
   created_at: Date | null;
   is_visible?: boolean;
-  animal_images: { image_url: string | null }[];
+  animal_images: { image_url: string | null; source?: string | null; photographer_name?: string | null }[];
 };
 
 type RawCreatedAnimal = {
@@ -102,6 +102,9 @@ export function toAnimalDetail(raw: RawAnimalDetail) {
     })),
 
     images: [imageUrl].filter(Boolean) as string[],
+    image_photographers: raw.animal_images
+      .map((img) => img.photographer_name || img.source)
+      .filter(Boolean) as string[],
 
     stats: (() => {
       if (raw.dataset_animals.length === 0) return null;

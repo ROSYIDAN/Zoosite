@@ -35,6 +35,7 @@ export const createAnimalSchema = z.object({
     .or(z.literal("")),
   image: z.string().url("Please provide a valid image URL").optional(),
   image_source: z.string().optional(),
+  photographer_name: z.string().optional().or(z.literal("")),
   diet: z.string().optional(),
   lifespan_years: z.string().optional(),
   weight_kg: z.string().optional(),

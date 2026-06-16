@@ -63,6 +63,7 @@ export default function AnimalForm({ classes, initialData, initialCountries, onS
       predators: initialData?.predators || "",
       image: initialData?.image || "",
       image_source: initialData?.image_source || "",
+      photographer_name: initialData?.photographer_name || "",
       tags: initialData?.tags || [],
       countries: initialData?.countries || [],
       habitats: initialData?.habitats || [],
@@ -73,6 +74,7 @@ export default function AnimalForm({ classes, initialData, initialCountries, onS
   const commonName = watch("name");
   const imageUrl = watch("image");
   const imageSource = watch("image_source");
+  const photographerName = watch("photographer_name");
   const scientificName = watch("scientific_name");
   const description = watch("description");
   const descriptionSource = watch("description_source");
@@ -182,6 +184,7 @@ export default function AnimalForm({ classes, initialData, initialCountries, onS
         <AnimalPreviewModal
           imageUrl={imageUrl}
           imageSource={imageSource}
+          photographerName={photographerName}
           commonName={commonName}
           scientificName={scientificName}
           description={description}
