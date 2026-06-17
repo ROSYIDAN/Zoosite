@@ -159,14 +159,60 @@ export default function AnimalPreviewModal({
                       style={parsed.style}
                     />
                   </div>
-                  {(photographerName || imageSource) && (
-                    <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20">
-                      <p className="text-[8px] text-white/90 font-['Manrope'] font-medium flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[10px]">person</span>
-                        {photographerName || imageSource}
-                      </p>
-                    </div>
-                  )}
+                  {(() => {
+                    const isUrl = (str?: string | null): boolean => {
+                      if (!str) return false;
+                      return str.startsWith("http://") || str.startsWith("https://") || str.startsWith("www.");
+                    };
+
+                    const getHref = (str?: string | null): string => {
+                      if (!str) return "";
+                      if (str.startsWith("www.")) {
+                        return `https://${str}`;
+                      }
+                      return str;
+                    };
+
+                    const hasLink = isUrl(imageSource);
+                    const href = getHref(imageSource);
+
+                    let displayLabel = "";
+                    if (photographerName) {
+                      displayLabel = `Photo by ${photographerName}`;
+                      if (imageSource && !hasLink) {
+                        displayLabel += ` (${imageSource})`;
+                      }
+                    } else if (imageSource) {
+                      if (hasLink) {
+                        displayLabel = "Photo Source";
+                      } else {
+                        displayLabel = imageSource;
+                      }
+                    }
+
+                    if (!displayLabel) return null;
+
+                    return (
+                      <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20">
+                        <p className="text-[8px] text-white/90 font-['Manrope'] font-medium flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[10px]">person</span>
+                          {hasLink ? (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline flex items-center gap-1 hover:text-white"
+                            >
+                              {displayLabel}
+                              <span className="material-symbols-outlined text-[8px] shrink-0">open_in_new</span>
+                            </a>
+                          ) : (
+                            <span>{displayLabel}</span>
+                          )}
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
               <div className="space-y-4">

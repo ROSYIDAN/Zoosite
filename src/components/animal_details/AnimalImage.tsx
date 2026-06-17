@@ -11,7 +11,35 @@ interface AnimalImageProps {
 export default function AnimalImage({ imageUrl, altText, source, photographerName }: AnimalImageProps) {
   if (!imageUrl) return null;
 
-  const displayName = photographerName || source;
+  const isUrl = (str?: string | null): boolean => {
+    if (!str) return false;
+    return str.startsWith("http://") || str.startsWith("https://") || str.startsWith("www.");
+  };
+
+  const getHref = (str?: string | null): string => {
+    if (!str) return "";
+    if (str.startsWith("www.")) {
+      return `https://${str}`;
+    }
+    return str;
+  };
+
+  const hasLink = isUrl(source);
+  const href = getHref(source);
+
+  let displayLabel = "";
+  if (photographerName) {
+    displayLabel = `Photo by ${photographerName}`;
+    if (source && !hasLink) {
+      displayLabel += ` (${source})`;
+    }
+  } else if (source) {
+    if (hasLink) {
+      displayLabel = "Photo Source";
+    } else {
+      displayLabel = source;
+    }
+  }
 
   const parsed = parseMediaUrl(imageUrl);
   const { fit, x, y } = parsed.options;
@@ -30,11 +58,23 @@ export default function AnimalImage({ imageUrl, altText, source, photographerNam
           objectPosition: `${x}% ${y}%`,
         }}
       />
-      {displayName && (
+      {displayLabel && (
         <div className="absolute bottom-4 mx-2 w-fit bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 transition-opacity duration-300 opacity-60 group-hover:opacity-100">
           <p className="text-[10px] text-white/90 font-['Manrope'] font-medium flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[12px]">person</span>
-            {displayName}
+            {hasLink ? (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline flex items-center gap-1 hover:text-white"
+              >
+                {displayLabel}
+                <span className="material-symbols-outlined text-[8px] shrink-0">open_in_new</span>
+              </a>
+            ) : (
+              <span>{displayLabel}</span>
+            )}
           </p>
         </div>
       )}
