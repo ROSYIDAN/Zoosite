@@ -23,6 +23,16 @@ type RawExploreAnimal = {
   animal_environment: { habitat: { habitat_name: string | null } | null }[];
 };
 
+type RawRecentAnimal = {
+  id: string;
+  canonical_slug: string | null;
+  animal_name: string | null;
+  scientific_name: string | null;
+  family: string | null;
+  created_at: Date | null;
+  animal_images: { image_url: string | null }[];
+};
+
 type RawTrendingAnimal = {
   id: string;
   ordo: string | null;
@@ -42,6 +52,22 @@ type RawTrendingAnimal = {
 };
 
 // ── Mappers ──
+
+export function toRecentAnimalItem(raw: RawRecentAnimal) {
+  const imageUrl =
+    getPreferredAnimalImageUrl(raw.animal_images, raw.canonical_slug) ||
+    buildLocalImageUrl(raw.canonical_slug);
+
+  return {
+    id: raw.id,
+    slug: raw.canonical_slug || "",
+    name: raw.animal_name || "Unknown",
+    scientific_name: raw.scientific_name || "",
+    family: raw.family || "",
+    image: imageUrl || "/static_image.png",
+    created_at: raw.created_at ?? new Date(),
+  };
+}
 
 export function toBrowseRegionItem(raw: RawBrowseRegion) {
   return {

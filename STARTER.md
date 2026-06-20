@@ -25,6 +25,12 @@ On each daily progress update or session update:
 1. **Update Task Tracker**: You MUST update [docs/tracker_docs/task.md](file:///d:/CHAKKSSS/ZooSite/docs/tracker_docs/task.md) to document the day's achievements, completed items, and verifications under the corresponding date.
 2. **Commit with the PR**: Ensure these progress updates are committed and pushed within the current branch/PR, keeping the task tracker and development progress fully aligned.
 
+> [!CAUTION]
+> **Branch Policy**: Only push code to the **`dev`** branch.
+> - Never push work-in-progress or feature work directly to `main`.
+> - Feature branches (e.g. `feat/*`) merge into `dev` first; `dev` is the integration branch that eventually flows into `main` (or `staging`).
+> - The only exception is `main` receiving merges from `dev` during a controlled release — never direct feature commits.
+
 ## 4. The Golden Rule (RTK)
 **Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This is mandatory for token efficiency.
 

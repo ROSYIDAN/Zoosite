@@ -178,6 +178,30 @@ export const dashboardRepo = {
     });
   },
 
+  // ── Recent Animals ──
+
+  async getRecentAnimals(since: Date, limit: number) {
+    return prisma.animals.findMany({
+      where: {
+        is_visible: true,
+        created_at: { gte: since },
+      },
+      orderBy: { created_at: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        canonical_slug: true,
+        animal_name: true,
+        scientific_name: true,
+        family: true,
+        created_at: true,
+        animal_images: {
+          select: { image_url: true },
+        },
+      },
+    });
+  },
+
   async getTrendingAnimals(idList: string[], detail?: string) {
     const selectConfig: Prisma.animalsSelect = {
       id: true,

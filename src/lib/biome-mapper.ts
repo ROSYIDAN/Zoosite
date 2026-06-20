@@ -1,22 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getPreferredAnimalImageUrl } from "@/lib/image-utils";
+import type { FeaturedAnimal, BiomeData } from "@/types/biome.types";
 
-export interface FeaturedAnimal {
-  name: string;
-  slug: string;
-  image: string;
-}
-
-export interface BiomeData {
-  id: string;
-  title: string;
-  imageSrc: string;
-  icon: string;
-  badge: string;
-  animalCount: number;
-  habitats: { id: string; name: string }[];
-  featuredAnimals: FeaturedAnimal[];
-}
 
 export const BIOMES = [
   {
@@ -136,7 +121,10 @@ export async function getBiomeExplorerData(): Promise<BiomeData[]> {
 
   // Calculate unique animal counts & select featured animals for each biome
   for (const biome of biomesData) {
-    const animalMap = new Map<string, any>();
+    const animalMap = new Map<
+      string,
+      NonNullable<typeof habitats[number]["animal_environment"][number]["animals"]>
+    >();
 
     const biomeHabNames = new Set(biome.habitats.map((bh) => bh.name.toLowerCase()));
     const matchedHabitats = habitats.filter((h) => biomeHabNames.has(h.habitat_name!.toLowerCase()));

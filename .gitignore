@@ -48,3 +48,7 @@ next-env.d.ts
 
 # ai agent context
 /ai-agent-context.md
+
+# temporary design and scratch files
+/design
+/scratch

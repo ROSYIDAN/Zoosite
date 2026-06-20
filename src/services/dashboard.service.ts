@@ -4,6 +4,7 @@ import {
   toBrowseHabitatItem,
   toExploreAnimalItem,
   toTrendingAnimalItem,
+  toRecentAnimalItem,
 } from "@/lib/mappers/dashboard.mapper";
 import type {
   ExploreHabitatQuery,
@@ -12,6 +13,7 @@ import type {
   TrendingQuery,
 } from "@/lib/validations/dashboard.schema";
 import { checkLocalImageExists } from "@/lib/image-utils";
+import { getStartOfWeek, getEndOfWeek } from "@/lib/date-utils";
 
 
 export const dashboardService = {
@@ -83,6 +85,36 @@ export const dashboardService = {
 
   async getStatsTotals() {
     return dashboardRepo.getTotals();
+  },
+
+  // ── Recent Animals (New This Week) ──
+
+  async getRecentAnimals(limit = 6) {
+    const now = new Date();
+    const since = getStartOfWeek(now);
+
+    // Fetch more than needed so we can filter out animals without images
+    const raw = await dashboardRepo.getRecentAnimals(since, limit * 3);
+
+    const withImages = await Promise.all(
+      raw.map(async (a: any) => {
+        const hasImage =
+          a.animal_images?.some((img: any) => img.image_url) ||
+          await checkLocalImageExists(a.id);
+        return { a, hasImage };
+      })
+    );
+
+    const filtered = withImages
+      .filter((r) => r.hasImage)
+      .map((r) => r.a)
+      .slice(0, limit);
+
+    return {
+      items: filtered.map((a: any) => toRecentAnimalItem(a)),
+      weekStart: getStartOfWeek(now),
+      weekEnd: getEndOfWeek(now),
+    };
   },
 
   // ── Trending ──

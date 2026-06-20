@@ -66,4 +66,34 @@ export const habitatRepo = {
 
     return habitatIds;
   },
+
+  /**
+   * Fetch fine-grained habitats inside specific IDs with visible species counts.
+   */
+  async findWithVisibleAnimalCounts(ids: string[]) {
+    return prisma.habitat.findMany({
+      where: {
+        id: { in: ids },
+      },
+      select: {
+        id: true,
+        habitat_name: true,
+        _count: {
+          select: {
+            animal_environment: {
+              where: {
+                animals: {
+                  is_visible: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        habitat_name: "asc",
+      },
+    });
+  },
 };
+
