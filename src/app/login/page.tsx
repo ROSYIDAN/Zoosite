@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import GoogleSignInButton from "@/components/features/auth/google-sign-in-button";
-import { signInWithPasscode } from "@/lib/auth-actions";
+import DeveloperBypassForm from "@/components/features/auth/developer-bypass-form";
 
 export default async function LoginPage({
   searchParams,
@@ -64,20 +64,7 @@ export default async function LoginPage({
                 </div>
               )}
 
-              <form action={signInWithPasscode} className="flex gap-2">
-                <input
-                  type="text"
-                  name="passcode"
-                  placeholder="Enter dev secret..."
-                  className="flex-1 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm focus:border-primary-container focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg bg-stone-800 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-stone-900"
-                >
-                  Bypass
-                </button>
-              </form>
+              <DeveloperBypassForm />
             </div>
           </div>
         </div>

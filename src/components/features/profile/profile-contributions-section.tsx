@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
+import ImageWithSkeleton from "@/components/loading/ImageWithSkeleton";
 
 interface ContributionItem {
   id: string;
@@ -114,12 +114,12 @@ export const ProfileContributionsSection: React.FC<ProfileContributionsSectionPr
                 {/* Thumbnail */}
                 <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-[#eeeee9] shrink-0">
                   {animal.image_url ? (
-                    <Image
+                    <ImageWithSkeleton
                       src={animal.image_url}
                       alt={animal.animal_name || "Animal image"}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      sizes="48px"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      containerClassName="w-full h-full"
+                      isCard={true}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[#42493e]/50 bg-[#eeeee9]">

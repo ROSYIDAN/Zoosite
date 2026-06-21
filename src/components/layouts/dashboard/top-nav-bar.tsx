@@ -17,7 +17,7 @@ import { UserAvatar } from "@/components/features/profile/user-avatar";
 export default function TopNavBar() {
   const { isSidebarVisible } = useSidebar();
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const user = session?.user;
 
   return (

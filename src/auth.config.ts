@@ -31,9 +31,7 @@ export const authConfig = {
         session.user.role = token.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.USER;
         session.user.image_position = typeof token.image_position === "string" ? token.image_position : "50% 50%";
         session.user.image_scale = typeof token.image_scale === "number" ? token.image_scale : 1.0;
-        if (token.picture) {
-          session.user.image = token.picture;
-        }
+        session.user.image = (token.picture as string | null) || null;
       }
       return session;
     },

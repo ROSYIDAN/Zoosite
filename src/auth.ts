@@ -15,8 +15,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // First run the base jwt mapping from authConfig
       token = await authConfig.callbacks.jwt({ token, user, trigger, session } as any);
 
-      // If it's a routine background check or reload, fetch latest from DB to prevent stale session values
-      if (!user && trigger !== "update" && token.id) {
+      // Fetch latest from DB to prevent stale session values (runs on sign-in and reloads)
+      if (trigger !== "update" && token.id) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },

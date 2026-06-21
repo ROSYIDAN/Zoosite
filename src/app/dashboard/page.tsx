@@ -3,7 +3,7 @@ import QuickActions from "@/components/features/dashboard/quick-actions";
 import FeaturedBanner from "@/components/features/dashboard/featured-banner";
 import QuizNav from "@/components/features/dashboard/quiz-nav";
 import EcosystemGrid from "@/components/features/dashboard/ecosystem-grid";
-import NewAnimals from "@/components/features/dashboard/new-animals";
+import NewAnimals from "@/components/features/dashboard/new-animals/new-animals";
 import TrendingAnimals from "@/components/features/dashboard/trending-animals";
 import StatsBar from "@/components/features/dashboard/stats-bar";
 export default async function DashboardPage() {
