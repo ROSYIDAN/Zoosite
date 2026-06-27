@@ -4,6 +4,9 @@
 > [!IMPORTANT]
 > This file contains the permanent configuration for this project. All AI assistants must follow these rules without exception.
 
+> [!CAUTION]
+> **Database Policy**: Never perform any database mutations (including migrations, database resets, table truncations, or deleting data/rows) without the user's explicit consent. If a database mutation is requested, you MUST ask and confirm with the user twice before executing.
+
 ## 1. Startup Protocol (Every Session)
 Before writing any code or performing a task, you MUST:
 1.  **Read and internalize the Project Laws**:
@@ -31,7 +34,14 @@ On each daily progress update or session update:
 > - Feature branches (e.g. `feat/*`) merge into `dev` first; `dev` is the integration branch that eventually flows into `main` (or `staging`).
 > - The only exception is `main` receiving merges from `dev` during a controlled release — never direct feature commits.
 
-## 4. The Golden Rule (RTK)
+## 4. Test Context Protocol
+When fixing bugs or verifying changes, you MUST follow the test context rules:
+1. **Read the Protocol**: View [docs/test_context.md](file:///d:/CHAKKSSS/ZooSite/docs/test_context.md) for layer-specific test guidelines and process cleanup rules.
+2. **Process Cleanup**: Always kill dev servers and orphan processes before completing a task. Never leave background processes running.
+3. **Log New Test Cases**: After resolving a non-trivial bug, append a test case entry to `docs/test_context.md` Section 4 (Test Case Log) documenting the context, fix, verification, and lessons learned.
+4. **Cross-Reference Errors**: Link test cases to relevant entries in `docs/errors/` when applicable.
+
+## 5. The Golden Rule (RTK)
 **Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This is mandatory for token efficiency.
 
 **Important**: Even in command chains with `&&`, use `rtk`:

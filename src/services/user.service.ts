@@ -1,7 +1,12 @@
 import { userRepo } from "@/repositories/user.repo";
 import { animalRequestRepo } from "@/repositories/animal-request.repo";
 import { AppError } from "@/lib/errors";
-import { updateProfileSchema, type UpdateProfileInput } from "@/lib/validations/user.schema";
+import {
+  updateProfileSchema,
+  updateCountrySchema,
+  type UpdateProfileInput,
+  type UpdateCountryInput,
+} from "@/lib/validations/user.schema";
 
 export const userService = {
   /**
@@ -43,6 +48,8 @@ export const userService = {
         is_request_banned: user.is_request_banned,
         request_banned_until: user.request_banned_until,
         rejections_reset_at: user.rejections_reset_at,
+        country_id: user.country_id,
+        country: user.country,
       },
       stats: {
         approvedCount: stats.approvedCount,
@@ -96,5 +103,23 @@ export const userService = {
       image_position: input.image_position || "50% 50%",
       image_scale: input.image_scale !== undefined ? input.image_scale : 1.0,
     });
+  },
+
+  /**
+   * Updates the authenticated user's home country.
+   */
+  async updateCountry(userId: string, input: UpdateCountryInput) {
+    const validated = updateCountrySchema.safeParse(input);
+    if (!validated.success) {
+      throw new AppError(validated.error.issues[0]?.message || "Invalid input", 400);
+    }
+
+    const user = await userRepo.getProfileById(userId);
+    if (!user) {
+      throw new AppError("User profile not found", 404);
+    }
+
+    const countryId = validated.data.countryId || null;
+    return userRepo.updateCountry(userId, countryId);
   },
 };

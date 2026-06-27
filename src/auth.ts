@@ -26,6 +26,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               image_scale: true,
               name: true,
               role: true,
+              country_id: true,
             },
           });
           if (dbUser) {
@@ -34,6 +35,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             token.image_scale = dbUser.image_scale ?? 1.0;
             token.name = dbUser.name;
             token.role = dbUser.role;
+            token.countryId = dbUser.country_id;
           }
         } catch (err) {
           console.error("Failed to sync session with database:", err);

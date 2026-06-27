@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 interface NavigationControlsProps {
   onPrev: () => void;
@@ -17,15 +18,23 @@ export default function NavigationControls({
   nextDisabled,
   lastFetched,
 }: NavigationControlsProps) {
+  const [formattedTime, setFormattedTime] = useState<string>("");
+
+  useEffect(() => {
+    if (lastFetched) {
+      setFormattedTime(new Date(lastFetched).toLocaleTimeString());
+    }
+  }, [lastFetched]);
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-col">
         <h2 className="text-2xl font-bold tracking-tight text-primary font-headline">
           Trending Research
         </h2>
-        {lastFetched && (
+        {formattedTime && (
           <span className="text-[10px] text-on-surface-variant font-medium opacity-60">
-            Last updated: {new Date(lastFetched).toLocaleTimeString()}
+            Last updated: {formattedTime}
           </span>
         )}
       </div>

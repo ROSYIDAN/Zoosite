@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, DistributionStatus } from "@prisma/client";
 
 export const animalDistributionRepo = {
   /**
@@ -42,5 +42,121 @@ export const animalDistributionRepo = {
           AND h.habitat_name IS NOT NULL
       `
     );
+  },
+
+  /**
+   * Fetch all countries with their region names.
+   */
+  async getAllCountries() {
+    return prisma.countries.findMany({
+      select: {
+        id: true,
+        country: true,
+        country_flag: true,
+        regions: {
+          select: {
+            region: true,
+          },
+        },
+      },
+      orderBy: {
+        country: "asc",
+      },
+    });
+  },
+
+  /**
+   * Fetch a single country by ID.
+   */
+  async getCountryById(id: string) {
+    return prisma.countries.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        country: true,
+        country_flag: true,
+        regions: {
+          select: {
+            region: true,
+          },
+        },
+      },
+    });
+  },
+
+  /**
+   * Fetch native and/or endemic animals in a country with filtering, search, and pagination.
+   */
+  async getNativeAnimals(
+    countryId: string,
+    options: {
+      status?: DistributionStatus | "ALL";
+      search?: string;
+      limit: number;
+      skip: number;
+    }
+  ) {
+    const { status = "ALL", search, limit, skip } = options;
+
+    // Define status filter
+    // If specific status (ENDEMIC or NATIVE) is requested, filter by it.
+    // Otherwise (ALL), default to either NATIVE or ENDEMIC.
+    const statusFilter =
+      status === "ALL"
+        ? { in: [DistributionStatus.NATIVE, DistributionStatus.ENDEMIC] }
+        : status;
+
+    // Define search condition
+    const searchCondition = search
+      ? {
+          OR: [
+            { animal_name: { contains: search, mode: Prisma.QueryMode.insensitive } },
+            { scientific_name: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          ],
+        }
+      : {};
+
+    const whereClause: Prisma.animalsWhereInput = {
+      is_visible: true,
+      animal_distributions: {
+        some: {
+          country_id: countryId,
+          distribution_status: statusFilter,
+        },
+      },
+      ...searchCondition,
+    };
+
+    const [animals, total] = await Promise.all([
+      prisma.animals.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          canonical_slug: true,
+          animal_name: true,
+          scientific_name: true,
+          family: true,
+          animal_images: {
+            take: 1,
+            select: {
+              image_url: true,
+            },
+          },
+        },
+        orderBy: {
+          animal_name: "asc",
+        },
+        take: limit,
+        skip: skip,
+      }),
+      prisma.animals.count({
+        where: whereClause,
+      }),
+    ]);
+
+    return {
+      animals,
+      total,
+    };
   },
 };

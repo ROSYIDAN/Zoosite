@@ -14,3 +14,9 @@ export const updateProfileSchema = z.object({
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+export const updateCountrySchema = z.object({
+  countryId: z.string().uuid().nullable().or(z.literal("")),
+});
+
+export type UpdateCountryInput = z.infer<typeof updateCountrySchema>;

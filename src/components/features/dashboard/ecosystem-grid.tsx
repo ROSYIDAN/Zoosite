@@ -16,43 +16,43 @@ export default function EcosystemGrid() {
         <HabitatLink
           href="/habitats?biome=forests"
           title="Forests"
-          imageSrc="/biomes/forests.png"
+          imageSrc="/biomes/forests.webp"
         />
 
         <HabitatLink
           href="/habitats?biome=grasslands"
           title="Grasslands"
-          imageSrc="/biomes/grasslands.png"
+          imageSrc="/biomes/grasslands.webp"
         />
 
         <HabitatLink
           href="/habitats?biome=wetlands"
           title="Wetlands"
-          imageSrc="/biomes/wetlands.png"
+          imageSrc="/biomes/wetlands.webp"
         />
 
         <HabitatLink
           href="/habitats?biome=waters"
           title="Waters"
-          imageSrc="/biomes/waters.png"
+          imageSrc="/biomes/waters.webp"
         />
 
         <HabitatLink
           href="/habitats?biome=deserts-drylands"
           title="Deserts & Drylands"
-          imageSrc="/biomes/deserts-drylands.png"
+          imageSrc="/biomes/deserts-drylands.webp"
         />
 
         <HabitatLink
           href="/habitats?biome=polar-tundra"
           title="Polar & Tundra"
-          imageSrc="/biomes/polar-tundra.png"
+          imageSrc="/biomes/polar-tundra.webp"
         />
 
         <HabitatLink
           href="/habitats?biome=mountains-highlands"
           title="Mountains & Highlands"
-          imageSrc="/biomes/mountains-highlands.png"
+          imageSrc="/biomes/mountains-highlands.webp"
         />
       </div>
     </section>

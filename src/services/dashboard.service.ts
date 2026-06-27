@@ -126,17 +126,26 @@ export const dashboardService = {
     const animalsWithImages = await dashboardRepo.getAnimalsWithImages(randomIds.map(r => r.id));
 
     const validIds: string[] = [];
+    const fallbackIds: string[] = [];
 
     for (const row of randomIds) {
       const animal = animalsWithImages.find(a => a.id === row.id);
       const hasImage = animal?.animal_images?.some((img: any) => img.image_url) || await checkLocalImageExists(row.id);
 
       if (hasImage) {
-        validIds.push(row.id);
+        if (validIds.length < 10) {
+          validIds.push(row.id);
+        }
+      } else {
+        fallbackIds.push(row.id);
       }
-      
-      if (validIds.length === 10) {
-        break;
+    }
+
+    // Fallback: if we have fewer than 10 animals with images, fill the remaining slots with other random animals
+    while (validIds.length < 10 && fallbackIds.length > 0) {
+      const fallbackId = fallbackIds.shift();
+      if (fallbackId) {
+        validIds.push(fallbackId);
       }
     }
 

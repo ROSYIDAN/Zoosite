@@ -20,6 +20,14 @@ export const userRepo = {
         is_request_banned: true,
         request_banned_until: true,
         rejections_reset_at: true,
+        country_id: true,
+        country: {
+          select: {
+            id: true,
+            country: true,
+            country_flag: true,
+          },
+        },
       },
     });
   },
@@ -141,5 +149,28 @@ export const userRepo = {
       },
     });
     return animalImage?.animals || null;
+  },
+
+  /**
+   * Updates the user's home/saved country.
+   */
+  async updateCountry(id: string, countryId: string | null) {
+    return prisma.user.update({
+      where: { id },
+      data: {
+        country_id: countryId,
+      },
+      select: {
+        id: true,
+        country_id: true,
+        country: {
+          select: {
+            id: true,
+            country: true,
+            country_flag: true,
+          },
+        },
+      },
+    });
   },
 };

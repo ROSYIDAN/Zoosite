@@ -16,12 +16,14 @@ export const authConfig = {
         token.role = user.role ?? UserRole.USER;
         token.image_position = user.image_position ?? "50% 50%";
         token.image_scale = user.image_scale ?? 1.0;
+        token.countryId = user.countryId ?? null;
       }
       if (trigger === "update" && session) {
         if (session.image !== undefined) token.picture = session.image;
         if (session.image_position !== undefined) token.image_position = session.image_position;
         if (session.image_scale !== undefined) token.image_scale = session.image_scale;
         if (session.name !== undefined) token.name = session.name;
+        if (session.countryId !== undefined) token.countryId = session.countryId;
       }
       return token;
     },
@@ -32,6 +34,7 @@ export const authConfig = {
         session.user.image_position = typeof token.image_position === "string" ? token.image_position : "50% 50%";
         session.user.image_scale = typeof token.image_scale === "number" ? token.image_scale : 1.0;
         session.user.image = (token.picture as string | null) || null;
+        session.user.countryId = typeof token.countryId === "string" ? token.countryId : null;
       }
       return session;
     },

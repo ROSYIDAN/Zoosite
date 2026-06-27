@@ -5,3 +5,13 @@ export const animalDistributionQuerySchema = z.object({
 });
 
 export type AnimalDistributionQuery = z.infer<typeof animalDistributionQuerySchema>;
+
+export const nativeAnimalsQuerySchema = z.object({
+  countryId: z.string().uuid("Country ID must be a valid UUID"),
+  status: z.enum(["ALL", "NATIVE", "ENDEMIC"]).optional().default("ALL"),
+  search: z.string().optional(),
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().optional().default(12),
+});
+
+export type NativeAnimalsQuery = z.infer<typeof nativeAnimalsQuerySchema>;

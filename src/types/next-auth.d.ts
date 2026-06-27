@@ -8,6 +8,7 @@ declare module "next-auth" {
       role: UserRole;
       image_position?: string | null;
       image_scale?: number | null;
+      countryId?: string | null;
     } & DefaultSession["user"];
   }
 
@@ -15,6 +16,7 @@ declare module "next-auth" {
     role?: UserRole;
     image_position?: string | null;
     image_scale?: number | null;
+    countryId?: string | null;
   }
 }
 
@@ -24,5 +26,6 @@ declare module "next-auth/jwt" {
     role: UserRole;
     image_position?: string | null;
     image_scale?: number | null;
+    countryId?: string | null;
   }
 }
