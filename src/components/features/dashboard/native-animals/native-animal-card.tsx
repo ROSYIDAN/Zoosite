@@ -4,13 +4,14 @@ import type { NativeAnimalItem } from "@/types/native-animals.types";
 
 interface NativeAnimalCardProps {
   animal: NativeAnimalItem;
+  priority?: boolean;
 }
 
 /**
  * NativeAnimalCard - displays individual endemic animal
  * Matches NewAnimalCard styling for consistency
  */
-export default function NativeAnimalCard({ animal }: NativeAnimalCardProps) {
+export default function NativeAnimalCard({ animal, priority }: NativeAnimalCardProps) {
   return (
     <Link href={`/animals/${animal.slug}`} className="block h-full">
       <div className="bg-surface-container-low h-82 rounded-2xl p-4 flex flex-col hover:shadow-xl transition-shadow cursor-pointer group border border-outline-variant/10">
@@ -19,6 +20,7 @@ export default function NativeAnimalCard({ animal }: NativeAnimalCardProps) {
           <ImageWithSkeleton
             alt={animal.name}
             src={animal.image}
+            priority={priority}
             isCard={true}
             fallbackSrc="/static_image.png"
             className="w-full h-full object-cover rounded-xl"
@@ -57,6 +59,19 @@ export default function NativeAnimalCard({ animal }: NativeAnimalCardProps) {
               </span>
               <span className="text-[10px] text-on-surface-variant font-medium tracking-tight uppercase truncate">
                 {animal.family}
+              </span>
+            </div>
+          )}
+          {animal.locality && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <span
+                className="material-symbols-outlined text-primary text-xs"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                location_on
+              </span>
+              <span className="text-[10px] text-on-surface-variant font-medium tracking-tight truncate" title={animal.locality}>
+                {animal.locality}
               </span>
             </div>
           )}

@@ -51,6 +51,12 @@ export default async function EditAnimalPage({
     photographer_name: animal.animal_images[0]?.photographer_name || undefined,
     tags: animal.tags.map((tag) => tag.name),
     countries: animal.animal_distributions.flatMap((d) => d.countries ? [d.countries.id] : []),
+    specific_localities: animal.animal_distributions.reduce((acc, d) => {
+      if (d.countries && d.specific_locality) {
+        acc[d.countries.id] = d.specific_locality;
+      }
+      return acc;
+    }, {} as Record<string, string>),
     habitats: animal.animal_environment.flatMap((e) => (e.habitat && e.habitat.habitat_name) ? [e.habitat.habitat_name] : []),
   };
 

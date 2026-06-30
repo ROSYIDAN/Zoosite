@@ -12,6 +12,7 @@ export const nativeAnimalsQuerySchema = z.object({
   search: z.string().optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().optional().default(12),
+  sortBy: z.enum(["name", "newest"]).optional().default("name"),
 });
 
-export type NativeAnimalsQuery = z.infer<typeof nativeAnimalsQuerySchema>;
+export type NativeAnimalsQuery = z.input<typeof nativeAnimalsQuerySchema>;

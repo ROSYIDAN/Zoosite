@@ -8,6 +8,7 @@ export interface NativeAnimalItem {
   family: string | null;
   image: string;
   status: "NATIVE" | "ENDEMIC";
+  locality?: string | null;
 }
 
 export interface Country {

@@ -1,5 +1,7 @@
 import DashboardLayout from "@/components/layouts/dashboard/dashboard-layout";
 import AnimalCardGrid from "@/components/grid/animal-card-grid";
+import HeroSearch from "@/components/features/dashboard/hero-search";
+import ArchiveSortSelect from "@/components/features/animals-archive/archive-sort-select";
 import { animalService } from "@/services/animal.service";
 
 export const metadata = {
@@ -26,10 +28,21 @@ export default async function AnimalsArchivePage({ searchParams }: PageProps) {
   const pageParam = typeof resolvedSearchParams.page === "string" ? Number.parseInt(resolvedSearchParams.page, 10) : undefined;
   const initialPage = pageParam !== undefined && Number.isFinite(pageParam) && pageParam > 0 ? pageParam : DEFAULT_PAGE;
 
+  const sortParam = typeof resolvedSearchParams.sort === "string" ? resolvedSearchParams.sort : undefined;
+  const orderParam = typeof resolvedSearchParams.order === "string" ? resolvedSearchParams.order : undefined;
+
+  const validSorts = ["name", "scientific_name", "created_at", "is_visible"] as const;
+  const validOrders = ["asc", "desc"] as const;
+
+  const sort = validSorts.includes(sortParam as any) ? (sortParam as typeof validSorts[number]) : "name";
+  const order = validOrders.includes(orderParam as any) ? (orderParam as typeof validOrders[number]) : "asc";
+
   const result = await animalService.list({
     limit: 1000,
     page: DEFAULT_PAGE,
     search: search,
+    sort: sort,
+    order: order,
   });
 
   const animals: ArchiveAnimal[] = result.data.map((item) => ({
@@ -49,6 +62,13 @@ export default async function AnimalsArchivePage({ searchParams }: PageProps) {
           <p className="text-sm text-[#1a1c19]/85 dark:text-[#fafaf5]/85 mt-2 max-w-3xl font-['Manrope'] leading-relaxed">
             {animals.length} species documented in the archive.
           </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="flex-1 w-full max-w-2xl">
+            <HeroSearch showHeader={false} initialValue={search} />
+          </div>
+          <ArchiveSortSelect />
         </div>
 
         {animals.length === 0 ? (

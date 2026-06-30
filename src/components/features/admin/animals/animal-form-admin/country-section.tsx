@@ -125,12 +125,12 @@ export default function CountrySection({ setValue, watch, initialCountries, comm
             </div>
           )}
 
-          {/* Selected Countries */}
+          {/* Selected Countries Badges */}
           <div className="flex flex-wrap gap-2">
             {selectedCountries.map((c) => (
               <span
                 key={c.id}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-outline-variant text-[#1a1c19] text-xs font-bold font-['Manrope'] hover:border-primary-container transition-all group"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-outline-variant text-[#1a1c19] text-xs font-bold font-['Manrope'] hover:border-primary-container transition-all group"
               >
                 <span className="w-4 h-3 shrink-0 overflow-hidden rounded-[2px] bg-[#fafaf5] border border-outline-variant/30 flex items-center justify-center">
                   {c.country_flag?.startsWith("http") ? (
@@ -142,7 +142,10 @@ export default function CountrySection({ setValue, watch, initialCountries, comm
                 {c.country}
                 <button
                   type="button"
-                  onClick={() => removeCountry(c.id)}
+                  onClick={() => {
+                    setValue(`specific_localities.${c.id}`, undefined, { shouldDirty: true });
+                    removeCountry(c.id);
+                  }}
                   className="text-[#1a1c19]/40 hover:text-red-500 transition-colors"
                 >
                   <span className="material-symbols-outlined text-[16px]">close</span>
@@ -150,6 +153,50 @@ export default function CountrySection({ setValue, watch, initialCountries, comm
               </span>
             ))}
           </div>
+
+          {/* Specific Localities Form Fields */}
+          {selectedCountries.length > 0 && (
+            <div className="mt-4 border border-[#1a1c19]/10 rounded-xl overflow-hidden bg-white">
+              <div className="px-4 py-2.5 bg-[#fafaf5] border-b border-[#1a1c19]/10 text-xs font-bold font-['Plus_Jakarta_Sans'] text-[#1a1c19]/60 flex items-center justify-between">
+                <span>Specific Localities (Optional)</span>
+                <span className="font-normal text-[11px] text-[#1a1c19]/40">Specify regions/localities where the species is found within each selected country</span>
+              </div>
+              <div className="divide-y divide-[#1a1c19]/5 max-h-72 overflow-y-auto">
+                {selectedCountries.map((c) => {
+                  const localityValue = watch(`specific_localities.${c.id}`) || "";
+                  return (
+                    <div
+                      key={c.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 hover:bg-[#fafaf5]/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 shrink-0 sm:w-1/3">
+                        <span className="w-4.5 h-3 shrink-0 overflow-hidden rounded-[2px] bg-[#fafaf5] border border-outline-variant/30 flex items-center justify-center">
+                          {c.country_flag?.startsWith("http") ? (
+                            <img src={c.country_flag} alt={c.country} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-[9px] leading-none">{c.country_flag || "📍"}</span>
+                          )}
+                        </span>
+                        <span className="text-xs font-bold font-['Manrope'] text-[#1a1c19] truncate">{c.country}</span>
+                      </div>
+                      
+                      <div className="flex-1 w-full sm:w-auto">
+                        <input
+                          type="text"
+                          placeholder={`Locality in ${c.country} (e.g. Sumatra, Borneo, Huai Kha Khaeng)`}
+                          value={localityValue}
+                          onChange={(e) => {
+                            setValue(`specific_localities.${c.id}`, e.target.value, { shouldDirty: true });
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-[#1a1c19]/10 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all text-xs font-['Manrope'] bg-[#fafaf5]/30"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -66,6 +66,7 @@ export default function AnimalForm({ classes, initialData, initialCountries, onS
       photographer_name: initialData?.photographer_name || "",
       tags: initialData?.tags || [],
       countries: initialData?.countries || [],
+      specific_localities: initialData?.specific_localities || {},
       habitats: initialData?.habitats || [],
       synonyms: initialData?.synonyms || "",
     },

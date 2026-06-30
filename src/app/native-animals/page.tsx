@@ -53,7 +53,7 @@ export default function NativeAnimalsPage() {
   // 2. Set currentCountryId from session when session loads
   useEffect(() => {
     if (session?.user?.countryId) {
-      setCurrentCountryId(session.user.countryId);
+      if (currentCountryId !== session.user.countryId) setCurrentCountryId(session.user.countryId);
     } else if (countries.length > 0 && !currentCountryId) {
       // Default to Thailand or first country if no country is in session
       const defaultCountry = countries.find(c => c.name.toLowerCase() === "thailand") || countries[0];
@@ -61,7 +61,7 @@ export default function NativeAnimalsPage() {
         setCurrentCountryId(defaultCountry.id);
       }
     }
-  }, [session, countries, currentCountryId]);
+  }, [session?.user?.countryId, countries, currentCountryId]);
 
   // 3. Fetch animals when selected country changes
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function NativeAnimalsPage() {
     async function fetchAnimals() {
       setIsAnimalsLoading(true);
       try {
-        const res = await fetch(`/api/native-animals?countryId=${currentCountryId}&status=ALL`);
+        const res = await fetch(`/api/native-animals?countryId=${currentCountryId}&status=ALL&limit=1000`);
         if (res.ok) {
           const json = await res.json();
           setAnimals(json.animals || []);

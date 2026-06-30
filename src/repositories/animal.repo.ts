@@ -120,6 +120,7 @@ const animalDetailSelect = {
   },
   animal_distributions: {
     select: {
+      specific_locality: true,
       countries: {
         select: {
           id: true,
@@ -345,6 +346,7 @@ export const animalRepo = {
           data: input.countries.map(countryId => ({
             animal_id: animal.id,
             country_id: countryId,
+            specific_locality: input.specific_localities?.[countryId] || null,
           }))
         });
       }
@@ -444,6 +446,11 @@ export const animalRepo = {
 
       // 5. Sync Countries (Distribution)
       if (input.countries) {
+        const existingDistributions = await tx.animal_distributions.findMany({
+          where: { animal_id: id }
+        });
+        const statusMap = new Map(existingDistributions.map(d => [d.country_id, d.distribution_status]));
+
         await tx.animal_distributions.deleteMany({
           where: { animal_id: id }
         });
@@ -453,6 +460,8 @@ export const animalRepo = {
             data: input.countries.map(countryId => ({
               animal_id: id,
               country_id: countryId,
+              distribution_status: statusMap.get(countryId) || "NATIVE",
+              specific_locality: input.specific_localities?.[countryId] || null,
             }))
           });
         }

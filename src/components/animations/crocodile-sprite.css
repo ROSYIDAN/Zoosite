@@ -45,8 +45,8 @@
 .crocodile-sprite--fast { --sprite-speed: 0.5s; }
 
 @keyframes crocodileIdle {
-  from { background-position: 0 0; }
-  to { background-position: calc(var(--sprite-size) * -4) 0; }
+  from { background-position: 0% 0; }
+  to { background-position: 133.3333% 0; }
 }
 
 @keyframes floaty {

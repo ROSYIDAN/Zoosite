@@ -25,7 +25,7 @@ export default function NativeAnimalsWidget() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("/api/native-animals");
+        const res = await fetch("/api/native-animals?limit=4&sortBy=newest");
         if (res.ok) {
           const json = await res.json();
           setAnimals(json.animals || []);
@@ -132,11 +132,11 @@ export default function NativeAnimalsWidget() {
             ? "grid-cols-1 max-w-sm mx-auto"
             : animals.length === 2
               ? "grid-cols-1 sm:grid-cols-2"
-              : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"
+              : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
         }`}
       >
-        {animals.map((animal) => (
-          <NativeAnimalCard key={animal.id} animal={animal} />
+        {animals.map((animal, idx) => (
+          <NativeAnimalCard key={animal.id} animal={animal} priority={idx < 4} />
         ))}
       </div>
     </section>

@@ -35,6 +35,7 @@ type RawAnimalDetail = {
     conservation_status: string | null;
   }[];
   animal_distributions: {
+    specific_locality: string | null;
     countries: {
       country: string;
       country_flag: string | null;
@@ -99,6 +100,7 @@ export function toAnimalDetail(raw: RawAnimalDetail) {
       country: d.countries?.country,
       region: d.countries?.regions?.region,
       flag: d.countries?.country_flag || null,
+      specific_locality: d.specific_locality || null,
     })),
 
     images: [imageUrl].filter(Boolean) as string[],

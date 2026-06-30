@@ -94,9 +94,10 @@ export const animalDistributionRepo = {
       search?: string;
       limit: number;
       skip: number;
+      sortBy?: "name" | "newest";
     }
   ) {
-    const { status = "ALL", search, limit, skip } = options;
+    const { status = "ALL", search, limit, skip, sortBy = "name" } = options;
 
     // Define status filter
     // If specific status (ENDEMIC or NATIVE) is requested, filter by it.
@@ -142,10 +143,19 @@ export const animalDistributionRepo = {
               image_url: true,
             },
           },
+          animal_distributions: {
+            where: {
+              country_id: countryId,
+            },
+            select: {
+              distribution_status: true,
+              specific_locality: true,
+            },
+          },
         },
-        orderBy: {
-          animal_name: "asc",
-        },
+        orderBy: sortBy === "newest"
+          ? { created_at: "desc" as const }
+          : { animal_name: "asc" as const },
         take: limit,
         skip: skip,
       }),

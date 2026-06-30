@@ -71,11 +71,10 @@
 
 @keyframes pandaIdle {
   from {
-    background-position: 0 0;
+    background-position: 0% 0;
   }
   to {
-    /* Shift left by the full sheet width (4 frames) */
-    background-position: calc(var(--sprite-size) * -4) 0;
+    background-position: 133.3333% 0;
   }
 }
 

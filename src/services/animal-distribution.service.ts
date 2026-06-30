@@ -1,5 +1,6 @@
 import { AppError } from "@/lib/errors";
 import { animalDistributionRepo } from "@/repositories/animal-distribution.repo";
+import { checkLocalImageExists } from "@/lib/image-utils";
 import {
   animalDistributionQuerySchema,
   nativeAnimalsQuerySchema,
@@ -74,7 +75,7 @@ export const animalDistributionService = {
       throw new AppError(validated.error.issues[0]?.message || "Invalid input", 400);
     }
 
-    const { countryId, status, search, page, limit } = validated.data;
+    const { countryId, status, search, page, limit, sortBy } = validated.data;
 
     // 1. Verify country exists
     const country = await animalDistributionRepo.getCountryById(countryId);
@@ -82,23 +83,38 @@ export const animalDistributionService = {
       throw new AppError("Country not found", 404, "NOT_FOUND");
     }
 
-    // 2. Fetch animals
-    const skip = (page - 1) * limit;
-    const { animals, total } = await animalDistributionRepo.getNativeAnimals(countryId, {
+    // 2. Fetch animals (retrieve a larger batch to filter imageless ones in memory)
+    const { animals } = await animalDistributionRepo.getNativeAnimals(countryId, {
       status,
       search,
-      limit,
-      skip,
+      limit: 1000,
+      skip: 0,
+      sortBy,
     });
 
+    const filterResults = await Promise.all(
+      animals.map(async (a: any) => {
+        const hasImageUrl = a.animal_images?.some((img: any) => img.image_url);
+        const exists = hasImageUrl || await checkLocalImageExists(a.id);
+        return { a, exists };
+      })
+    );
+
+    const filtered = filterResults.filter((r) => r.exists).map((r) => r.a);
+    const total = filtered.length;
+    const start = (page - 1) * limit;
+    const sliced = filtered.slice(start, start + limit);
+
     // 3. Format result
-    const formattedAnimals = animals.map((a) => ({
+    const formattedAnimals = sliced.map((a) => ({
       id: a.id,
       slug: a.canonical_slug || "",
       name: a.animal_name || "",
       scientific_name: a.scientific_name,
       family: a.family,
       image: a.animal_images[0]?.image_url || "/static_image.png",
+      status: a.animal_distributions[0]?.distribution_status || "NATIVE",
+      locality: a.animal_distributions[0]?.specific_locality || null,
     }));
 
     const formattedCountry = {
