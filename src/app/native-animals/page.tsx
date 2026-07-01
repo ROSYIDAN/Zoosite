@@ -20,10 +20,18 @@ export default function NativeAnimalsPage() {
   const [currentCountryId, setCurrentCountryId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFamily, setSelectedFamily] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedLocality, setSelectedLocality] = useState("");
   const [sortBy, setSortBy] = useState("name-asc");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "NATIVE" | "ENDEMIC">("ALL");
   const [isLoading, setIsLoading] = useState(true);
   const [isAnimalsLoading, setIsAnimalsLoading] = useState(false);
+  const [locationOptions, setLocationOptions] = useState<{
+    regions: string[];
+    provinces: string[];
+    localities: string[];
+  }>({ regions: [], provinces: [], localities: [] });
 
   // 1. Fetch all countries on load
   useEffect(() => {
@@ -63,7 +71,29 @@ export default function NativeAnimalsPage() {
     }
   }, [session?.user?.countryId, countries, currentCountryId]);
 
-  // 3. Fetch animals when selected country changes
+  // 3. Fetch location options when selected country changes
+  useEffect(() => {
+    if (!currentCountryId) return;
+
+    async function fetchLocationOptions() {
+      try {
+        const res = await fetch(`/api/native-animals/locations?countryId=${currentCountryId}`);
+        if (res.ok) {
+          const json = await res.json();
+          setLocationOptions({
+            regions: json.regions || [],
+            provinces: json.provinces || [],
+            localities: json.localities || [],
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching location options:", err);
+      }
+    }
+    fetchLocationOptions();
+  }, [currentCountryId]);
+
+  // 4. Fetch animals when selected country changes
   useEffect(() => {
     if (!currentCountryId) return;
 
@@ -121,6 +151,45 @@ export default function NativeAnimalsPage() {
       filtered = filtered.filter((animal) => animal.family === selectedFamily);
     }
 
+    // Region filter - Handle both JSON arrays and single strings
+    if (selectedRegion) {
+      filtered = filtered.filter((animal) => {
+        if (!animal.region_name) return false;
+        try {
+          const regions = JSON.parse(animal.region_name);
+          return Array.isArray(regions) && regions.includes(selectedRegion);
+        } catch {
+          return animal.region_name === selectedRegion;
+        }
+      });
+    }
+
+    // Province filter - Handle both JSON arrays and single strings
+    if (selectedProvince) {
+      filtered = filtered.filter((animal) => {
+        if (!animal.province) return false;
+        try {
+          const provinces = JSON.parse(animal.province);
+          return Array.isArray(provinces) && provinces.includes(selectedProvince);
+        } catch {
+          return animal.province === selectedProvince;
+        }
+      });
+    }
+
+    // Locality filter - Handle both JSON arrays and single strings
+    if (selectedLocality) {
+      filtered = filtered.filter((animal) => {
+        if (!animal.locality) return false;
+        try {
+          const localities = JSON.parse(animal.locality);
+          return Array.isArray(localities) && localities.includes(selectedLocality);
+        } catch {
+          return animal.locality === selectedLocality;
+        }
+      });
+    }
+
     // Sort
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -135,7 +204,7 @@ export default function NativeAnimalsPage() {
     });
 
     return filtered;
-  }, [animals, statusFilter, searchQuery, selectedFamily, sortBy]);
+  }, [animals, statusFilter, searchQuery, selectedFamily, selectedRegion, selectedProvince, selectedLocality, sortBy]);
 
   // Handle changing user country preference
   const handleCountryChange = async (countryId: string) => {
@@ -197,11 +266,20 @@ export default function NativeAnimalsPage() {
           onFamilyChange={setSelectedFamily}
           onSortChange={setSortBy}
           onStatusChange={setStatusFilter}
+          onRegionChange={setSelectedRegion}
+          onProvinceChange={setSelectedProvince}
+          onLocalityChange={setSelectedLocality}
           families={families}
+          regions={locationOptions.regions}
+          provinces={locationOptions.provinces}
+          localities={locationOptions.localities}
           currentSearch={searchQuery}
           currentFamily={selectedFamily}
           currentSort={sortBy}
           currentStatus={statusFilter}
+          currentRegion={selectedRegion}
+          currentProvince={selectedProvince}
+          currentLocality={selectedLocality}
         />
 
         {isAnimalsLoading ? (

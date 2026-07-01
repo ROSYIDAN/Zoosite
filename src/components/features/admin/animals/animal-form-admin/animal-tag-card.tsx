@@ -28,13 +28,25 @@ export default function AnimalTagCard({ setValue, watch }: AnimalTagCardProps) {
 
   useEffect(() => {
     fetch("/api/tags")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch tags: ${res.status} ${res.statusText}`);
+        }
+        return res.json();
+      })
       .then((data) => {
         if (Array.isArray(data)) {
           setExistingTags(data);
+        } else {
+          console.warn("Tag API returned non-array data:", data);
+          setExistingTags([]);
         }
       })
-      .catch((err) => console.error("Failed to fetch tags for suggestions:", err));
+      .catch((err) => {
+        // Silently fail - tag suggestions are optional, form still works
+        console.warn("Could not load tag suggestions (form still functional):", err.message || err);
+        setExistingTags([]);
+      });
   }, []);
 
   // Watch other classification inputs for dynamic smart recommendations

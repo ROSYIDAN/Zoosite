@@ -121,6 +121,8 @@ const animalDetailSelect = {
   animal_distributions: {
     select: {
       specific_locality: true,
+      region_name: true,
+      province: true,
       countries: {
         select: {
           id: true,
@@ -343,11 +345,20 @@ export const animalRepo = {
       // 6. Create Animal Distributions (Countries) if provided
       if (input.countries && input.countries.length > 0) {
         await tx.animal_distributions.createMany({
-          data: input.countries.map(countryId => ({
-            animal_id: animal.id,
-            country_id: countryId,
-            specific_locality: input.specific_localities?.[countryId] || null,
-          }))
+          data: input.countries.map(countryId => {
+            const locationData = input.specific_localities?.[countryId];
+            const regions = locationData?.regions && locationData.regions.length > 0 ? JSON.stringify(locationData.regions) : null;
+            const provinces = locationData?.provinces && locationData.provinces.length > 0 ? JSON.stringify(locationData.provinces) : null;
+            const localities = locationData?.localities && locationData.localities.length > 0 ? JSON.stringify(locationData.localities) : null;
+            
+            return {
+              animal_id: animal.id,
+              country_id: countryId,
+              region_name: regions,
+              province: provinces,
+              specific_locality: localities,
+            };
+          })
         });
       }
 
@@ -457,12 +468,21 @@ export const animalRepo = {
 
         if (input.countries.length > 0) {
           await tx.animal_distributions.createMany({
-            data: input.countries.map(countryId => ({
-              animal_id: id,
-              country_id: countryId,
-              distribution_status: statusMap.get(countryId) || "NATIVE",
-              specific_locality: input.specific_localities?.[countryId] || null,
-            }))
+            data: input.countries.map(countryId => {
+              const locationData = input.specific_localities?.[countryId];
+              const regions = locationData?.regions && locationData.regions.length > 0 ? JSON.stringify(locationData.regions) : null;
+              const provinces = locationData?.provinces && locationData.provinces.length > 0 ? JSON.stringify(locationData.provinces) : null;
+              const localities = locationData?.localities && locationData.localities.length > 0 ? JSON.stringify(locationData.localities) : null;
+              
+              return {
+                animal_id: id,
+                country_id: countryId,
+                distribution_status: statusMap.get(countryId) || "NATIVE",
+                region_name: regions,
+                province: provinces,
+                specific_locality: localities,
+              };
+            })
           });
         }
       }

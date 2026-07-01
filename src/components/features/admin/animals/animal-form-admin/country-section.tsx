@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { CreateAnimalInput } from "@/lib/validations/animal.schema";
 import { useCountrySelection, Country } from "@/hooks/use-country-selection";
 import KnowledgeHelper from "./knowledge-helper";
 import CountryModal from "./country-modal";
+import TagInput from "./tag-input";
 
 interface CountrySectionProps {
   setValue: UseFormSetValue<CreateAnimalInput>;
@@ -35,6 +36,14 @@ export default function CountrySection({ setValue, watch, initialCountries, comm
   } = useCountrySelection({ setValue, watch, initialCountries });
 
   const countryRef = useRef<HTMLDivElement>(null);
+  const [expandedCountries, setExpandedCountries] = useState<Record<string, boolean>>({});
+
+  const toggleCountry = (countryId: string) => {
+    setExpandedCountries(prev => ({
+      ...prev,
+      [countryId]: !prev[countryId]
+    }));
+  };
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -158,38 +167,82 @@ export default function CountrySection({ setValue, watch, initialCountries, comm
           {selectedCountries.length > 0 && (
             <div className="mt-4 border border-[#1a1c19]/10 rounded-xl overflow-hidden bg-white">
               <div className="px-4 py-2.5 bg-[#fafaf5] border-b border-[#1a1c19]/10 text-xs font-bold font-['Plus_Jakarta_Sans'] text-[#1a1c19]/60 flex items-center justify-between">
-                <span>Specific Localities (Optional)</span>
-                <span className="font-normal text-[11px] text-[#1a1c19]/40">Specify regions/localities where the species is found within each selected country</span>
+                <span>Location Details (Optional)</span>
+                <span className="font-normal text-[11px] text-[#1a1c19]/40">Specify region, province, and specific locality for each country</span>
               </div>
-              <div className="divide-y divide-[#1a1c19]/5 max-h-72 overflow-y-auto">
+              <div className="divide-y divide-[#1a1c19]/5 max-h-96 overflow-y-auto">
                 {selectedCountries.map((c) => {
-                  const localityValue = watch(`specific_localities.${c.id}`) || "";
+                  const locationData = watch(`specific_localities.${c.id}`) || {};
+                  const regionsValue = Array.isArray(locationData.regions) ? locationData.regions : [];
+                  const provincesValue = Array.isArray(locationData.provinces) ? locationData.provinces : [];
+                  const localitiesValue = Array.isArray(locationData.localities) ? locationData.localities : [];
+                  const isExpanded = expandedCountries[c.id] || false;
+                  const totalFields = regionsValue.length + provincesValue.length + localitiesValue.length;
+                  
                   return (
                     <div
                       key={c.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 hover:bg-[#fafaf5]/30 transition-colors"
+                      className="hover:bg-[#fafaf5]/30 transition-colors"
                     >
-                      <div className="flex items-center gap-2 shrink-0 sm:w-1/3">
-                        <span className="w-4.5 h-3 shrink-0 overflow-hidden rounded-[2px] bg-[#fafaf5] border border-outline-variant/30 flex items-center justify-center">
-                          {c.country_flag?.startsWith("http") ? (
-                            <img src={c.country_flag} alt={c.country} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-[9px] leading-none">{c.country_flag || "📍"}</span>
+                      <button
+                        type="button"
+                        onClick={() => toggleCountry(c.id)}
+                        className="w-full p-4 flex items-center justify-between gap-2 text-left"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-3.5 shrink-0 overflow-hidden rounded-[2px] bg-[#fafaf5] border border-outline-variant/30 flex items-center justify-center">
+                            {c.country_flag?.startsWith("http") ? (
+                              <img src={c.country_flag} alt={c.country} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[10px] leading-none">{c.country_flag || "📍"}</span>
+                            )}
+                          </span>
+                          <span className="text-sm font-bold font-['Manrope'] text-[#1a1c19]">{c.country}</span>
+                          {totalFields > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-primary-container/10 text-primary-container text-[10px] font-bold font-['Manrope']">
+                              {totalFields} {totalFields === 1 ? 'location' : 'locations'}
+                            </span>
                           )}
+                        </div>
+                        <span className={`material-symbols-outlined text-[20px] text-[#1a1c19]/40 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                          expand_more
                         </span>
-                        <span className="text-xs font-bold font-['Manrope'] text-[#1a1c19] truncate">{c.country}</span>
-                      </div>
+                      </button>
                       
-                      <div className="flex-1 w-full sm:w-auto">
-                        <input
-                          type="text"
-                          placeholder={`Locality in ${c.country} (e.g. Sumatra, Borneo, Huai Kha Khaeng)`}
-                          value={localityValue}
-                          onChange={(e) => {
-                            setValue(`specific_localities.${c.id}`, e.target.value, { shouldDirty: true });
-                          }}
-                          className="w-full px-3 py-1.5 rounded-lg border border-[#1a1c19]/10 focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all text-xs font-['Manrope'] bg-[#fafaf5]/30"
-                        />
+                      <div 
+                        className={`overflow-hidden transition-all duration-200 ${isExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}
+                      >
+                        <div className="flex flex-col gap-3 px-4 pb-4 pl-11">
+                          <TagInput
+                            label="Regions"
+                            placeholder={`e.g., Northern ${c.country}, Central Plains, Java`}
+                            value={regionsValue}
+                            onChange={(regions) => {
+                              const currentData = watch(`specific_localities.${c.id}`) || {};
+                              setValue(`specific_localities.${c.id}`, { ...currentData, regions }, { shouldDirty: true });
+                            }}
+                          />
+                          
+                          <TagInput
+                            label="Provinces / States"
+                            placeholder="e.g., Chiang Mai, West Java, Luzon"
+                            value={provincesValue}
+                            onChange={(provinces) => {
+                              const currentData = watch(`specific_localities.${c.id}`) || {};
+                              setValue(`specific_localities.${c.id}`, { ...currentData, provinces }, { shouldDirty: true });
+                            }}
+                          />
+                          
+                          <TagInput
+                            label="Specific Localities"
+                            placeholder="e.g., Doi Inthanon National Park, Ujung Kulon, Subic Bay"
+                            value={localitiesValue}
+                            onChange={(localities) => {
+                              const currentData = watch(`specific_localities.${c.id}`) || {};
+                              setValue(`specific_localities.${c.id}`, { ...currentData, localities }, { shouldDirty: true });
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
                   );

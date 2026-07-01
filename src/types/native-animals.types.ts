@@ -8,7 +8,9 @@ export interface NativeAnimalItem {
   family: string | null;
   image: string;
   status: "NATIVE" | "ENDEMIC";
-  locality?: string | null;
+  region_name?: string | null;       // Geographic region within country
+  province?: string | null;          // Province/state level
+  locality?: string | null;          // Specific location (parks, reserves)
 }
 
 export interface Country {
@@ -21,4 +23,10 @@ export interface Country {
 export interface NativeAnimalsData {
   animals: NativeAnimalItem[];
   country: Country | null;
+}
+
+export interface LocationFilters {
+  regions: string[];
+  provinces: string[];
+  localities: string[];
 }

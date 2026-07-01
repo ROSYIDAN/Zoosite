@@ -11,6 +11,9 @@ export async function GET(request: NextRequest) {
     let countryId = searchParams.get("countryId");
     const status = searchParams.get("status") || "ALL";
     const search = searchParams.get("search") || undefined;
+    const region = searchParams.get("region") || undefined;
+    const province = searchParams.get("province") || undefined;
+    const locality = searchParams.get("locality") || undefined;
     const page = searchParams.get("page") || undefined;
     const limit = searchParams.get("limit") || undefined;
     const sortBy = searchParams.get("sortBy") || undefined;
@@ -42,6 +45,9 @@ export async function GET(request: NextRequest) {
       countryId,
       status,
       search,
+      region,
+      province,
+      locality,
       page,
       limit,
       sortBy,

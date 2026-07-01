@@ -52,11 +52,26 @@ export default async function EditAnimalPage({
     tags: animal.tags.map((tag) => tag.name),
     countries: animal.animal_distributions.flatMap((d) => d.countries ? [d.countries.id] : []),
     specific_localities: animal.animal_distributions.reduce((acc, d) => {
-      if (d.countries && d.specific_locality) {
-        acc[d.countries.id] = d.specific_locality;
+      if (d.countries) {
+        // Parse JSON arrays or use empty arrays
+        const parseJsonArray = (value: string | null): string[] => {
+          if (!value) return [];
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        };
+
+        acc[d.countries.id] = {
+          regions: parseJsonArray(d.region_name),
+          provinces: parseJsonArray(d.province),
+          localities: parseJsonArray(d.specific_locality),
+        };
       }
       return acc;
-    }, {} as Record<string, string>),
+    }, {} as Record<string, { regions?: string[]; provinces?: string[]; localities?: string[] }>),
     habitats: animal.animal_environment.flatMap((e) => (e.habitat && e.habitat.habitat_name) ? [e.habitat.habitat_name] : []),
   };
 

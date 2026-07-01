@@ -47,7 +47,11 @@ export const createAnimalSchema = z.object({
   predators: z.string().optional(),
   tags: z.array(z.string()).optional(),
   countries: z.array(z.string()).optional(),
-  specific_localities: z.record(z.string(), z.string().optional()).optional(),
+  specific_localities: z.record(z.string(), z.object({
+    regions: z.array(z.string()).optional(),
+    provinces: z.array(z.string()).optional(),
+    localities: z.array(z.string()).optional()
+  }).optional()).optional(),
   habitats: z.array(z.string()).optional(),
 });
 

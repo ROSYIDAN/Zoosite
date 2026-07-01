@@ -75,7 +75,7 @@ export const animalDistributionService = {
       throw new AppError(validated.error.issues[0]?.message || "Invalid input", 400);
     }
 
-    const { countryId, status, search, page, limit, sortBy } = validated.data;
+    const { countryId, status, search, region, province, locality, page, limit, sortBy } = validated.data;
 
     // 1. Verify country exists
     const country = await animalDistributionRepo.getCountryById(countryId);
@@ -87,6 +87,9 @@ export const animalDistributionService = {
     const { animals } = await animalDistributionRepo.getNativeAnimals(countryId, {
       status,
       search,
+      region,
+      province,
+      locality,
       limit: 1000,
       skip: 0,
       sortBy,
@@ -114,6 +117,8 @@ export const animalDistributionService = {
       family: a.family,
       image: a.animal_images[0]?.image_url || "/static_image.png",
       status: a.animal_distributions[0]?.distribution_status || "NATIVE",
+      region_name: a.animal_distributions[0]?.region_name || null,
+      province: a.animal_distributions[0]?.province || null,
       locality: a.animal_distributions[0]?.specific_locality || null,
     }));
 
@@ -134,5 +139,18 @@ export const animalDistributionService = {
         totalPages: Math.ceil(total / limit),
       },
     };
+  },
+
+  /**
+   * Get available location filter options for a specific country.
+   */
+  async getLocationFilterOptions(countryId: string) {
+    // Verify country exists
+    const country = await animalDistributionRepo.getCountryById(countryId);
+    if (!country) {
+      throw new AppError("Country not found", 404, "NOT_FOUND");
+    }
+
+    return await animalDistributionRepo.getLocationFilterOptions(countryId);
   },
 };
