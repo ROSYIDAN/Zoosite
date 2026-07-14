@@ -198,6 +198,11 @@ export const dashboardRepo = {
         animal_images: {
           select: { image_url: true },
         },
+        animal_distributions: {
+          select: {
+            country_id: true,
+          },
+        },
       },
     });
   },

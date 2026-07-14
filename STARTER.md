@@ -13,6 +13,9 @@ Before writing any code or performing a task, you MUST:
     - `docs/fe_law/FE_law.md` (Next.js, React, Styling, Typescript)
     - `docs/be_law/BE_law.md` (Clean Architecture, Prisma, Service/Repo layers)
 2.  **Strict Adherence**: Never deviate from the architecture patterns defined in the laws (e.g., No Prisma calls in routes).
+3.  **Proactive DRY & Code Quality Enforcement**:
+    - Before writing or editing any code, search the codebase for similar logic (e.g., event listeners, form sync, fetch behaviors) and extract them into custom hooks under `src/hooks/` or helpers under `src/lib/` to avoid DRY violations.
+    - Strictly enforce React component file length limits (~150 lines). If a file exceeds this limit, break it down into modular sibling components in its feature folder immediately. Do not wait for user prompts to perform these refactorings.
 
 ## 2. Error Tracking Protocol
 Whenever you debug, encounter, or solve a new error/issue in the codebase (e.g., runtime exceptions, compilation bugs, DB constraints, third-party api errors):

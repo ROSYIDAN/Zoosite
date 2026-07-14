@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export const habitatRepo = {
   /**
@@ -93,6 +94,48 @@ export const habitatRepo = {
       orderBy: {
         habitat_name: "asc",
       },
+    });
+  },
+
+  /**
+   * Create habitat relations for an animal inside a transaction.
+   */
+  async createHabitats(
+    tx: Prisma.TransactionClient,
+    animalId: string,
+    habitatNames: string[]
+  ) {
+    if (habitatNames.length === 0) return null;
+    const habitats = await this.findOrCreate(habitatNames);
+
+    return tx.animal_environment.createMany({
+      data: habitats.map((h) => ({
+        animal_id: animalId,
+        habitat_id: h.id,
+      })),
+    });
+  },
+
+  /**
+   * Sync habitat relations for an animal inside a transaction.
+   */
+  async syncHabitats(
+    tx: Prisma.TransactionClient,
+    animalId: string,
+    habitatNames: string[]
+  ) {
+    await tx.animal_environment.deleteMany({
+      where: { animal_id: animalId },
+    });
+
+    if (habitatNames.length === 0) return null;
+    const habitats = await this.findOrCreate(habitatNames);
+
+    return tx.animal_environment.createMany({
+      data: habitats.map((h) => ({
+        animal_id: animalId,
+        habitat_id: h.id,
+      })),
     });
   },
 };

@@ -1,5 +1,6 @@
 import { animalRequestRepo } from "@/repositories/animal-request.repo";
 import { animalRepo } from "@/repositories/animal.repo";
+import { userRepo } from "@/repositories/user.repo";
 import { cloudinary } from "@/lib/cloudinary";
 import { AppError } from "@/lib/errors";
 import type { RequestAnimalInput, UpdateRequestInput } from "@/lib/validations/animal-request.schema";
@@ -32,7 +33,7 @@ export const animalRequestService = {
    */
   async createRequest(input: RequestAnimalInput, userId: string) {
     // 1. Get requester and verify ban status
-    const user = await animalRequestRepo.getUserById(userId);
+    const user = await userRepo.getUserById(userId);
     if (!user) {
       throw new AppError("Requester user not found", 404);
     }
@@ -79,7 +80,7 @@ export const animalRequestService = {
       throw new AppError("You do not have permission to edit this request.", 403);
     }
 
-    const user = await animalRequestRepo.getUserById(userId);
+    const user = await userRepo.getUserById(userId);
     if (user) {
       if (user.is_request_banned) {
         throw new AppError("Your request privileges have been suspended permanently.", 403);
@@ -240,9 +241,9 @@ export const animalRequestService = {
     if (isBanned && durationDays && durationDays > 0) {
       bannedUntil = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
     }
-    const result = await animalRequestRepo.banUser(userId, isBanned, bannedUntil);
+    const result = await userRepo.banUser(userId, isBanned, bannedUntil);
     if (!isBanned) {
-      await animalRequestRepo.resetRejectionsTimestamp(userId);
+      await userRepo.resetRejectionsTimestamp(userId);
     }
     return result;
   },
@@ -251,7 +252,7 @@ export const animalRequestService = {
    * Resets the rejections count (strikes) for a user.
    */
   async resetUserStrikes(userId: string) {
-    return await animalRequestRepo.resetRejectionsTimestamp(userId);
+    return await userRepo.resetRejectionsTimestamp(userId);
   },
 
   /**
@@ -259,7 +260,7 @@ export const animalRequestService = {
    */
   async getSubmissionPageData(userId: string) {
     const classes = await animalRequestRepo.getAllClasses();
-    const user = await animalRequestRepo.getUserById(userId);
+    const user = await userRepo.getUserById(userId);
     const rejectionCount = await animalRequestRepo.getRejectionCount(userId);
 
     const isBanned = !!(

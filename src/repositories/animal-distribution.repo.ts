@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma, DistributionStatus } from "@prisma/client";
+import type { CreateAnimalInput } from "@/lib/validations/animal.schema";
+import { serializeLocality } from "@/lib/mappers/animal.mapper";
 
 export const animalDistributionRepo = {
   /**
@@ -256,5 +258,66 @@ export const animalDistributionRepo = {
       provinces,
       localities,
     };
+  },
+
+  /**
+   * Create distributions for an animal inside a transaction.
+   */
+  async createDistributions(
+    tx: Prisma.TransactionClient,
+    animalId: string,
+    countryIds: string[],
+    specificLocalities?: CreateAnimalInput["specific_localities"]
+  ) {
+    if (countryIds.length === 0) return null;
+    return tx.animal_distributions.createMany({
+      data: countryIds.map((countryId) => {
+        const locationData = specificLocalities?.[countryId];
+        return {
+          animal_id: animalId,
+          country_id: countryId,
+          region_name: serializeLocality(locationData?.regions),
+          province: serializeLocality(locationData?.provinces),
+          specific_locality: serializeLocality(locationData?.localities),
+        };
+      }),
+    });
+  },
+
+  /**
+   * Sync/recreate distributions for an animal inside a transaction.
+   */
+  async syncDistributions(
+    tx: Prisma.TransactionClient,
+    animalId: string,
+    countryIds: string[],
+    specificLocalities?: CreateAnimalInput["specific_localities"]
+  ) {
+    const existingDistributions = await tx.animal_distributions.findMany({
+      where: { animal_id: animalId },
+    });
+    const statusMap = new Map(
+      existingDistributions.map((d) => [d.country_id, d.distribution_status])
+    );
+
+    await tx.animal_distributions.deleteMany({
+      where: { animal_id: animalId },
+    });
+
+    if (countryIds.length === 0) return null;
+
+    return tx.animal_distributions.createMany({
+      data: countryIds.map((countryId) => {
+        const locationData = specificLocalities?.[countryId];
+        return {
+          animal_id: animalId,
+          country_id: countryId,
+          distribution_status: statusMap.get(countryId) || "NATIVE",
+          region_name: serializeLocality(locationData?.regions),
+          province: serializeLocality(locationData?.provinces),
+          specific_locality: serializeLocality(locationData?.localities),
+        };
+      }),
+    });
   },
 };

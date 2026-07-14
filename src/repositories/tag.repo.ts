@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { Prisma } from "@prisma/client";
 
 export const tagRepo = {
   /**
@@ -46,5 +47,42 @@ export const tagRepo = {
     }
 
     return tagsIds;
+  },
+
+  /**
+   * Connect tags to an animal inside a transaction.
+   */
+  async connectTags(
+    tx: Prisma.TransactionClient,
+    animalId: string,
+    tagIds: string[]
+  ) {
+    if (tagIds.length === 0) return null;
+    return tx.animals.update({
+      where: { id: animalId },
+      data: {
+        tags: {
+          connect: tagIds.map((id) => ({ id })),
+        },
+      },
+    });
+  },
+
+  /**
+   * Sync tags for an animal inside a transaction.
+   */
+  async syncTags(
+    tx: Prisma.TransactionClient,
+    animalId: string,
+    tagIds: string[]
+  ) {
+    return tx.animals.update({
+      where: { id: animalId },
+      data: {
+        tags: {
+          set: tagIds.map((id) => ({ id })),
+        },
+      },
+    });
   },
 };

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { parseMediaUrl, encodeMediaUrl, MediaLayoutOptions } from "@/lib/media-utils";
 import AnimalHeader from "@/components/animal_details/AnimalHeader";
+import LayoutSlider from "./layout-slider";
 
 interface AnimalPreviewModalProps {
   imageUrl: string;
@@ -118,13 +119,64 @@ export default function AnimalPreviewModal({
   const detailX = x;
   const detailY = y;
 
-  const effectiveCardFit = linkLayouts ? fit : (cardFit || fit);
-  const effectiveCardX = linkLayouts ? x : (cardX !== undefined ? cardX : x);
-  const effectiveCardY = linkLayouts ? y : (cardY !== undefined ? cardY : y);
-
   const cardFitVal = cardFit || fit;
   const cardXVal = cardX !== undefined ? cardX : x;
   const cardYVal = cardY !== undefined ? cardY : y;
+
+  const renderImageBadge = () => {
+    const isUrl = (str?: string | null): boolean => {
+      if (!str) return false;
+      return str.startsWith("http://") || str.startsWith("https://") || str.startsWith("www.");
+    };
+
+    const getHref = (str?: string | null): string => {
+      if (!str) return "";
+      if (str.startsWith("www.")) {
+        return `https://${str}`;
+      }
+      return str;
+    };
+
+    const hasLink = isUrl(imageSource);
+    const href = getHref(imageSource);
+
+    let displayLabel = "";
+    if (photographerName) {
+      displayLabel = `Photo by ${photographerName}`;
+      if (imageSource && !hasLink) {
+        displayLabel += ` (${imageSource})`;
+      }
+    } else if (imageSource) {
+      if (hasLink) {
+        displayLabel = "Photo Source";
+      } else {
+        displayLabel = imageSource;
+      }
+    }
+
+    if (!displayLabel) return null;
+
+    return (
+      <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20">
+        <p className="text-[8px] text-white/90 font-['Manrope'] font-medium flex items-center gap-1">
+          <span className="material-symbols-outlined text-[10px]">person</span>
+          {hasLink ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline flex items-center gap-1 hover:text-white"
+            >
+              {displayLabel}
+              <span className="material-symbols-outlined text-[8px] shrink-0">open_in_new</span>
+            </a>
+          ) : (
+            <span>{displayLabel}</span>
+          )}
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-stretch bg-[#1a1c19]/90 backdrop-blur-sm">
@@ -159,60 +211,7 @@ export default function AnimalPreviewModal({
                       style={parsed.style}
                     />
                   </div>
-                  {(() => {
-                    const isUrl = (str?: string | null): boolean => {
-                      if (!str) return false;
-                      return str.startsWith("http://") || str.startsWith("https://") || str.startsWith("www.");
-                    };
-
-                    const getHref = (str?: string | null): string => {
-                      if (!str) return "";
-                      if (str.startsWith("www.")) {
-                        return `https://${str}`;
-                      }
-                      return str;
-                    };
-
-                    const hasLink = isUrl(imageSource);
-                    const href = getHref(imageSource);
-
-                    let displayLabel = "";
-                    if (photographerName) {
-                      displayLabel = `Photo by ${photographerName}`;
-                      if (imageSource && !hasLink) {
-                        displayLabel += ` (${imageSource})`;
-                      }
-                    } else if (imageSource) {
-                      if (hasLink) {
-                        displayLabel = "Photo Source";
-                      } else {
-                        displayLabel = imageSource;
-                      }
-                    }
-
-                    if (!displayLabel) return null;
-
-                    return (
-                      <div className="absolute bottom-3 left-3 bg-black/40 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20">
-                        <p className="text-[8px] text-white/90 font-['Manrope'] font-medium flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[10px]">person</span>
-                          {hasLink ? (
-                            <a
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline flex items-center gap-1 hover:text-white"
-                            >
-                              {displayLabel}
-                              <span className="material-symbols-outlined text-[8px] shrink-0">open_in_new</span>
-                            </a>
-                          ) : (
-                            <span>{displayLabel}</span>
-                          )}
-                        </p>
-                      </div>
-                    );
-                  })()}
+                  {renderImageBadge()}
                 </div>
               </div>
               <div className="space-y-4">
@@ -315,37 +314,19 @@ export default function AnimalPreviewModal({
               </div>
             </div>
 
-            <div>
-              <div className="flex justify-between text-xs mb-1.5 font-['Manrope']">
-                <span className="font-semibold text-[#72796e]">Position X (Horizontal)</span>
-                <span className="text-[#2d5a27] font-bold">{detailX}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={detailX}
-                onChange={(e) => handleUpdateDetailOptions({ x: parseInt(e.target.value, 10) })}
-                className="w-full accent-[#2d5a27] cursor-pointer"
-                disabled={detailFit === "contain"}
-              />
-            </div>
+            <LayoutSlider
+              label="Position X (Horizontal)"
+              value={detailX}
+              onChange={(val) => handleUpdateDetailOptions({ x: val })}
+              disabled={detailFit === "contain"}
+            />
 
-            <div>
-              <div className="flex justify-between text-xs mb-1.5 font-['Manrope']">
-                <span className="font-semibold text-[#72796e]">Position Y (Vertical)</span>
-                <span className="text-[#2d5a27] font-bold">{detailY}%</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={detailY}
-                onChange={(e) => handleUpdateDetailOptions({ y: parseInt(e.target.value, 10) })}
-                className="w-full accent-[#2d5a27] cursor-pointer"
-                disabled={detailFit === "contain"}
-              />
-            </div>
+            <LayoutSlider
+              label="Position Y (Vertical)"
+              value={detailY}
+              onChange={(val) => handleUpdateDetailOptions({ y: val })}
+              disabled={detailFit === "contain"}
+            />
           </div>
 
           {/* Card Layout controls */}
@@ -390,37 +371,19 @@ export default function AnimalPreviewModal({
                 </div>
               </div>
 
-              <div>
-                <div className="flex justify-between text-xs mb-1.5 font-['Manrope']">
-                  <span className="font-semibold text-[#72796e]">Position X (Horizontal)</span>
-                  <span className="text-[#2d5a27] font-bold">{cardXVal}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={cardXVal}
-                  onChange={(e) => handleUpdateCardOptions({ cardX: parseInt(e.target.value, 10) })}
-                  className="w-full accent-[#2d5a27] cursor-pointer"
-                  disabled={linkLayouts || cardFitVal === "contain"}
-                />
-              </div>
+              <LayoutSlider
+                label="Position X (Horizontal)"
+                value={cardXVal}
+                onChange={(val) => handleUpdateCardOptions({ cardX: val })}
+                disabled={linkLayouts || cardFitVal === "contain"}
+              />
 
-              <div>
-                <div className="flex justify-between text-xs mb-1.5 font-['Manrope']">
-                  <span className="font-semibold text-[#72796e]">Position Y (Vertical)</span>
-                  <span className="text-[#2d5a27] font-bold">{cardYVal}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={cardYVal}
-                  onChange={(e) => handleUpdateCardOptions({ cardY: parseInt(e.target.value, 10) })}
-                  className="w-full accent-[#2d5a27] cursor-pointer"
-                  disabled={linkLayouts || cardFitVal === "contain"}
-                />
-              </div>
+              <LayoutSlider
+                label="Position Y (Vertical)"
+                value={cardYVal}
+                onChange={(val) => handleUpdateCardOptions({ cardY: val })}
+                disabled={linkLayouts || cardFitVal === "contain"}
+              />
             </div>
           </div>
         </div>

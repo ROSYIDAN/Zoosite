@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { UseFormSetValue, UseFormWatch } from "react-hook-form";
 import { CreateAnimalInput } from "@/lib/validations/animal.schema";
 import { toast } from "react-hot-toast";
@@ -25,8 +25,7 @@ export function useCountrySelection({ setValue, watch, initialCountries }: UseCo
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const selectedCountryIds = watch("countries") || [];
   
-  const [selectedCountries, setSelectedCountries] = useState<Country[]>(initialCountries || []);
-  const [allCountries, setAllCountries] = useState<Country[]>([]);
+  const [allCountries, setAllCountries] = useState<Country[]>(initialCountries || []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalCountryName, setModalCountryName] = useState("");
@@ -38,21 +37,20 @@ export function useCountrySelection({ setValue, watch, initialCountries }: UseCo
       .then((data) => {
         const list = data.data || [];
         setAllCountries(list);
-        if (selectedCountryIds.length > 0) {
-          const selected = list.filter((c: Country) => selectedCountryIds.includes(c.id));
-          setSelectedCountries(selected);
-        }
       })
       .catch((err) => console.error("Failed to load all countries:", err));
   }, []);
 
-  // Synchronize selectedCountries when selectedCountryIds or allCountries changes
-  useEffect(() => {
-    if (allCountries.length > 0) {
-      const selected = allCountries.filter((c) => selectedCountryIds.includes(c.id));
-      setSelectedCountries(selected);
-    }
-  }, [selectedCountryIds, allCountries]);
+  // Derive selectedCountries using useMemo based on selectedCountryIds and allCountries
+  const selectedCountries = useMemo(() => {
+    return selectedCountryIds
+      .map((id) => {
+        const found = allCountries.find((c) => c.id === id);
+        if (found) return found;
+        return initialCountries?.find((c) => c.id === id) || null;
+      })
+      .filter((c): c is Country => c !== null);
+  }, [selectedCountryIds, allCountries, initialCountries]);
 
   // Country Search
   useEffect(() => {
@@ -80,7 +78,6 @@ export function useCountrySelection({ setValue, watch, initialCountries }: UseCo
   const addCountry = (country: Country) => {
     if (!selectedCountryIds.includes(country.id)) {
       setValue("countries", [...selectedCountryIds, country.id], { shouldDirty: true });
-      setSelectedCountries((prev) => [...prev, country]);
     }
     setAllCountries((prev) => {
       if (!prev.some((c) => c.id === country.id)) {
@@ -93,13 +90,20 @@ export function useCountrySelection({ setValue, watch, initialCountries }: UseCo
   };
 
   const removeCountry = (id: string) => {
-    setValue("countries", selectedCountryIds.filter(cid => cid !== id), { shouldDirty: true });
-    setSelectedCountries((prev) => prev.filter(c => c.id !== id));
+    setValue(
+      "countries",
+      selectedCountryIds.filter((cid) => cid !== id),
+      { shouldDirty: true }
+    );
   };
 
   const handleCountryPaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = e.clipboardData.getData("text");
-    const hasMultiple = pastedText.includes(",") || pastedText.includes(";") || pastedText.includes("\n") || pastedText.includes("\r");
+    const hasMultiple =
+      pastedText.includes(",") ||
+      pastedText.includes(";") ||
+      pastedText.includes("\n") ||
+      pastedText.includes("\r");
     if (!hasMultiple) {
       return;
     }
@@ -135,12 +139,11 @@ export function useCountrySelection({ setValue, watch, initialCountries }: UseCo
         );
 
         if (uniqueNewCountries.length > 0) {
-          setValue("countries", [...selectedCountryIds, ...uniqueNewCountries.map((c) => c.id)], { shouldDirty: true });
-          setSelectedCountries((prev) => {
-            const existingIds = new Set(prev.map((c) => c.id));
-            const filteredNew = uniqueNewCountries.filter((c) => !existingIds.has(c.id));
-            return [...prev, ...filteredNew];
-          });
+          setValue(
+            "countries",
+            [...selectedCountryIds, ...uniqueNewCountries.map((c) => c.id)],
+            { shouldDirty: true }
+          );
         }
       }
       setAllCountries(dbCountries);
@@ -150,7 +153,9 @@ export function useCountrySelection({ setValue, watch, initialCountries }: UseCo
         toast.success(`Successfully auto-selected all ${newlySelected.length} countries!`);
       } else if (newlySelected.length > 0 && notFoundNames.length > 0) {
         toast.success(
-          `Auto-selected ${newlySelected.length} countries! (${notFoundNames.length} not found: ${notFoundNames.join(", ")})`
+          `Auto-selected ${newlySelected.length} countries! (${notFoundNames.length} not found: ${notFoundNames.join(
+            ", "
+          )})`
         );
       } else {
         toast.error(`None of the pasted countries were found in the database.`);

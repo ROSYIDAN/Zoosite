@@ -173,4 +173,52 @@ export const userRepo = {
       },
     });
   },
+
+  /**
+   * Fetches a user by ID with fields required for requesting privileges.
+   */
+  async getUserById(id: string) {
+    const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (!id || !UUID_REGEX.test(id)) return null;
+    return prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        is_request_banned: true,
+        request_banned_until: true,
+        rejections_reset_at: true,
+      },
+    });
+  },
+
+  /**
+   * Manually suspends request privileges for a user.
+   */
+  async banUser(userId: string, isBanned: boolean, bannedUntil: Date | null = null) {
+    const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (!userId || !UUID_REGEX.test(userId)) {
+      return { id: userId, is_request_banned: false, request_banned_until: null };
+    }
+    return prisma.user.update({
+      where: { id: userId },
+      data: { 
+        is_request_banned: isBanned,
+        request_banned_until: bannedUntil,
+      },
+      select: { id: true, is_request_banned: true, request_banned_until: true },
+    });
+  },
+
+  /**
+   * Resets the rejections timestamp for a user, recovering their strikes.
+   */
+  async resetRejectionsTimestamp(userId: string) {
+    const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (!userId || !UUID_REGEX.test(userId)) return null;
+    return prisma.user.update({
+      where: { id: userId },
+      data: { rejections_reset_at: new Date() },
+      select: { id: true, rejections_reset_at: true },
+    });
+  },
 };

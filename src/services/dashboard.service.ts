@@ -89,7 +89,7 @@ export const dashboardService = {
 
   // ── Recent Animals (New This Week) ──
 
-  async getRecentAnimals(limit = 6) {
+  async getRecentAnimals(limit = 6, countryId?: string | null) {
     const now = new Date();
     const since = getStartOfWeek(now);
 
@@ -101,12 +101,20 @@ export const dashboardService = {
         const hasImage =
           a.animal_images?.some((img: any) => img.image_url) ||
           await checkLocalImageExists(a.id);
-        return { a, hasImage };
+        const isNativeToCountry = countryId
+          ? a.animal_distributions?.some((dist: any) => dist.country_id === countryId)
+          : false;
+        return { a, hasImage, isNativeToCountry };
       })
     );
 
     const filtered = withImages
       .filter((r) => r.hasImage)
+      .sort((x, y) => {
+        if (x.isNativeToCountry && !y.isNativeToCountry) return -1;
+        if (!x.isNativeToCountry && y.isNativeToCountry) return 1;
+        return 0;
+      })
       .map((r) => r.a)
       .slice(0, limit);
 

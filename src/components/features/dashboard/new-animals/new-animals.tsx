@@ -4,11 +4,13 @@ import type { RecentAnimalItem } from "@/types/dashboard.types";
 import NewAnimalCard from "./new-animal-card";
 import AddAnimalPlaceholderCard from "./add-animal-placeholder-card";
 import { getStartOfWeek, getEndOfWeek } from "@/lib/date-utils";
+import { auth } from "@/auth";
+import { userService } from "@/services/user.service";
 
 const MAX_RECENT_ANIMALS = 6;
 
 const getCachedRecentAnimals = unstable_cache(
-  async () => dashboardService.getRecentAnimals(MAX_RECENT_ANIMALS),
+  async (countryId: string | null) => dashboardService.getRecentAnimals(MAX_RECENT_ANIMALS, countryId),
   ["new-animals-cache"],
   { revalidate: 120 }, // 2 minutes — keeps "new this week" fresh
 );
@@ -33,8 +35,19 @@ export default async function NewAnimals() {
   let weekStart = getStartOfWeek(new Date());
   let weekEnd = getEndOfWeek(new Date());
 
+  const session = await auth();
+  let countryId: string | null = null;
+  if (session?.user?.id) {
+    try {
+      const profile = await userService.getProfileData(session.user.id);
+      countryId = profile.user.country_id || null;
+    } catch (e) {
+      console.error("Failed to fetch user profile for recent animals prioritization:", e);
+    }
+  }
+
   try {
-    const result = await getCachedRecentAnimals();
+    const result = await getCachedRecentAnimals(countryId);
     items = result.items;
     weekStart = result.weekStart;
     weekEnd = result.weekEnd;

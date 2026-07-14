@@ -1,4 +1,5 @@
 import { buildLocalImageUrl, getPreferredAnimalImageUrl } from "../image-utils";
+import type { CreateAnimalInput } from "@/lib/validations/animal.schema";
 
 // ── Types for raw Prisma select results ──
 
@@ -157,4 +158,37 @@ export function toCreatedAnimal(raw: RawCreatedAnimal) {
     genus: raw.genus,
     created_at: raw.created_at,
   };
+}
+
+export function hasDatasetDetailValue(input: CreateAnimalInput): boolean {
+  return Boolean(
+    input.diet ||
+    input.lifespan_years ||
+    input.weight_kg ||
+    input.height_cm ||
+    input.avg_speed_kmh ||
+    input.top_speed_kmh ||
+    input.social_structure ||
+    input.conservation_status ||
+    input.predators
+  );
+}
+
+export function toDatasetAnimalData(input: CreateAnimalInput) {
+  return {
+    animal_name: input.name,
+    diet: input.diet || null,
+    lifespan_years: input.lifespan_years || null,
+    weight_kg: input.weight_kg || null,
+    height_cm: input.height_cm || null,
+    avg_speed_kmh: input.avg_speed_kmh || null,
+    top_speed_kmh: input.top_speed_kmh || null,
+    social_structure: input.social_structure || null,
+    conservation_status: input.conservation_status || null,
+    predators: input.predators || null,
+  };
+}
+
+export function serializeLocality(items?: string[] | null): string | null {
+  return items && items.length > 0 ? JSON.stringify(items) : null;
 }

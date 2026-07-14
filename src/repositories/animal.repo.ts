@@ -2,35 +2,146 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { slugify } from "@/lib/utils";
 import type { CreateAnimalInput, ListAnimalsQuery } from "@/lib/validations/animal.schema";
+import { hasDatasetDetailValue, toDatasetAnimalData } from "@/lib/mappers/animal.mapper";
+import { tagRepo } from "@/repositories/tag.repo";
+import { habitatRepo } from "@/repositories/habitat.repo";
+import { animalDistributionRepo } from "@/repositories/animal-distribution.repo";
 
-function hasDatasetDetailValue(input: CreateAnimalInput) {
-  return Boolean(
-    input.diet ||
-    input.lifespan_years ||
-    input.weight_kg ||
-    input.height_cm ||
-    input.avg_speed_kmh ||
-    input.top_speed_kmh ||
-    input.social_structure ||
-    input.conservation_status ||
-    input.predators
-  );
+// ── Transaction Sub-write Helpers ──
+
+async function createDescription(
+  tx: Prisma.TransactionClient,
+  animalId: string,
+  summary: string,
+  sourceUrl?: string | null
+) {
+  return tx.animal_descriptions.create({
+    data: {
+      animal_id: animalId,
+      summary,
+      source: "admin_panel",
+      source_url: sourceUrl || null,
+    },
+  });
 }
 
-function toDatasetAnimalData(input: CreateAnimalInput) {
-  return {
-    animal_name: input.name,
-    diet: input.diet || null,
-    lifespan_years: input.lifespan_years || null,
-    weight_kg: input.weight_kg || null,
-    height_cm: input.height_cm || null,
-    avg_speed_kmh: input.avg_speed_kmh || null,
-    top_speed_kmh: input.top_speed_kmh || null,
-    social_structure: input.social_structure || null,
-    conservation_status: input.conservation_status || null,
-    predators: input.predators || null,
-  };
+async function updateDescription(
+  tx: Prisma.TransactionClient,
+  animalId: string,
+  summary: string,
+  sourceUrl?: string | null
+) {
+  const existingDesc = await tx.animal_descriptions.findFirst({
+    where: { animal_id: animalId },
+  });
+  if (existingDesc) {
+    return tx.animal_descriptions.update({
+      where: { id: existingDesc.id },
+      data: {
+        summary,
+        source_url: sourceUrl || null,
+      },
+    });
+  } else {
+    return tx.animal_descriptions.create({
+      data: {
+        animal_id: animalId,
+        summary,
+        source: "admin_panel",
+        source_url: sourceUrl || null,
+      },
+    });
+  }
 }
+
+async function createImage(
+  tx: Prisma.TransactionClient,
+  animalId: string,
+  imageUrl: string,
+  source?: string | null,
+  photographerName?: string | null
+) {
+  return tx.animal_images.create({
+    data: {
+      animal_id: animalId,
+      image_url: imageUrl,
+      source: source || null,
+      photographer_name: photographerName || null,
+    },
+  });
+}
+
+async function updateImage(
+  tx: Prisma.TransactionClient,
+  animalId: string,
+  imageUrl: string,
+  source?: string | null,
+  photographerName?: string | null
+) {
+  const existingImage = await tx.animal_images.findFirst({
+    where: { animal_id: animalId },
+  });
+  if (existingImage) {
+    return tx.animal_images.update({
+      where: { id: existingImage.id },
+      data: {
+        image_url: imageUrl,
+        source: source || null,
+        photographer_name: photographerName || null,
+      },
+    });
+  } else {
+    return tx.animal_images.create({
+      data: {
+        animal_id: animalId,
+        image_url: imageUrl,
+        source: source || null,
+        photographer_name: photographerName || null,
+      },
+    });
+  }
+}
+
+async function createDatasetDetails(
+  tx: Prisma.TransactionClient,
+  animalId: string,
+  input: CreateAnimalInput
+) {
+  if (!hasDatasetDetailValue(input)) return null;
+  return tx.dataset_animals.create({
+    data: {
+      animal_id: animalId,
+      ...toDatasetAnimalData(input),
+    },
+  });
+}
+
+async function updateDatasetDetails(
+  tx: Prisma.TransactionClient,
+  animalId: string,
+  input: CreateAnimalInput
+) {
+  const existingDataset = await tx.dataset_animals.findFirst({
+    where: { animal_id: animalId },
+    select: { id: true },
+  });
+
+  if (existingDataset) {
+    return tx.dataset_animals.update({
+      where: { id: existingDataset.id },
+      data: toDatasetAnimalData(input),
+    });
+  } else if (hasDatasetDetailValue(input)) {
+    return tx.dataset_animals.create({
+      data: {
+        animal_id: animalId,
+        ...toDatasetAnimalData(input),
+      },
+    });
+  }
+  return null;
+}
+
 
 async function buildUniqueAnimalSlug(
   tx: Prisma.TransactionClient,
@@ -296,83 +407,32 @@ export const animalRepo = {
         select: { id: true, canonical_slug: true, family: true, genus: true, created_at: true },
       });
 
-      // 2. Create the description if provided
+      // 2. Create description
       if (input.description) {
-        await tx.animal_descriptions.create({
-          data: {
-            animal_id: animal.id,
-            summary: input.description,
-            source: "admin_panel",
-            source_url: input.description_source || null,
-          },
-        });
+        await createDescription(tx, animal.id, input.description, input.description_source);
       }
 
-      // 3. Create the image if provided
+      // 3. Create image
       if (input.image) {
-        await tx.animal_images.create({
-          data: {
-            animal_id: animal.id,
-            image_url: input.image,
-            source: input.image_source || null,
-            photographer_name: input.photographer_name || null,
-          },
-        });
+        await createImage(tx, animal.id, input.image, input.image_source, input.photographer_name);
       }
 
-      // 4. Create the dataset record for supported detail-page stats
-      if (hasDatasetDetailValue(input)) {
-        await tx.dataset_animals.create({
-          data: {
-            animal_id: animal.id,
-            ...toDatasetAnimalData(input),
-          },
-        });
+      // 4. Create dataset details
+      await createDatasetDetails(tx, animal.id, input);
+
+      // 5. Connect tags
+      if (input.tags) {
+        await tagRepo.connectTags(tx, animal.id, input.tags);
       }
 
-      // 5. Connect Tags if provided
-      if (input.tags && input.tags.length > 0) {
-        await tx.animals.update({
-          where: { id: animal.id },
-          data: {
-            tags: {
-              connect: input.tags.map(t => ({ id: t }))
-            }
-          }
-        });
+      // 6. Create distributions
+      if (input.countries) {
+        await animalDistributionRepo.createDistributions(tx, animal.id, input.countries, input.specific_localities);
       }
 
-      // 6. Create Animal Distributions (Countries) if provided
-      if (input.countries && input.countries.length > 0) {
-        await tx.animal_distributions.createMany({
-          data: input.countries.map(countryId => {
-            const locationData = input.specific_localities?.[countryId];
-            const regions = locationData?.regions && locationData.regions.length > 0 ? JSON.stringify(locationData.regions) : null;
-            const provinces = locationData?.provinces && locationData.provinces.length > 0 ? JSON.stringify(locationData.provinces) : null;
-            const localities = locationData?.localities && locationData.localities.length > 0 ? JSON.stringify(locationData.localities) : null;
-            
-            return {
-              animal_id: animal.id,
-              country_id: countryId,
-              region_name: regions,
-              province: provinces,
-              specific_locality: localities,
-            };
-          })
-        });
-      }
-
-      // 7. Create Animal Environment (Habitats) if provided
-      if (input.habitats && input.habitats.length > 0) {
-        const { habitatRepo } = await import("@/repositories/habitat.repo");
-        const habitats = await habitatRepo.findOrCreate(input.habitats);
-
-        await tx.animal_environment.createMany({
-          data: habitats.map(h => ({
-            animal_id: animal.id,
-            habitat_id: h.id,
-          }))
-        });
+      // 7. Create habitats
+      if (input.habitats) {
+        await habitatRepo.createHabitats(tx, animal.id, input.habitats);
       }
 
       return animal;
@@ -400,135 +460,30 @@ export const animalRepo = {
 
       // 2. Update description
       if (input.description) {
-        const existingDesc = await tx.animal_descriptions.findFirst({
-          where: { animal_id: id }
-        });
-        if (existingDesc) {
-          await tx.animal_descriptions.update({
-            where: { id: existingDesc.id },
-            data: {
-              summary: input.description,
-              source_url: input.description_source || null,
-            }
-          });
-        } else {
-          await tx.animal_descriptions.create({
-            data: {
-              animal_id: id,
-              summary: input.description,
-              source: "admin_panel",
-              source_url: input.description_source || null,
-            }
-          });
-        }
+        await updateDescription(tx, id, input.description, input.description_source);
       }
 
-      // 3. Sync the supported dataset detail fields
-      const existingDataset = await tx.dataset_animals.findFirst({
-        where: { animal_id: id },
-        select: { id: true },
-      });
+      // 3. Sync dataset details
+      await updateDatasetDetails(tx, id, input);
 
-      if (existingDataset) {
-        await tx.dataset_animals.update({
-          where: { id: existingDataset.id },
-          data: toDatasetAnimalData(input),
-        });
-      } else if (hasDatasetDetailValue(input)) {
-        await tx.dataset_animals.create({
-          data: {
-            animal_id: id,
-            ...toDatasetAnimalData(input),
-          },
-        });
-      }
-
-      // 4. Sync Tags (set replaces all existing connections)
+      // 4. Sync tags
       if (input.tags) {
-        await tx.animals.update({
-          where: { id },
-          data: {
-            tags: {
-              set: input.tags.map(t => ({ id: t }))
-            }
-          }
-        });
+        await tagRepo.syncTags(tx, id, input.tags);
       }
 
-      // 5. Sync Countries (Distribution)
+      // 5. Sync distributions
       if (input.countries) {
-        const existingDistributions = await tx.animal_distributions.findMany({
-          where: { animal_id: id }
-        });
-        const statusMap = new Map(existingDistributions.map(d => [d.country_id, d.distribution_status]));
-
-        await tx.animal_distributions.deleteMany({
-          where: { animal_id: id }
-        });
-
-        if (input.countries.length > 0) {
-          await tx.animal_distributions.createMany({
-            data: input.countries.map(countryId => {
-              const locationData = input.specific_localities?.[countryId];
-              const regions = locationData?.regions && locationData.regions.length > 0 ? JSON.stringify(locationData.regions) : null;
-              const provinces = locationData?.provinces && locationData.provinces.length > 0 ? JSON.stringify(locationData.provinces) : null;
-              const localities = locationData?.localities && locationData.localities.length > 0 ? JSON.stringify(locationData.localities) : null;
-              
-              return {
-                animal_id: id,
-                country_id: countryId,
-                distribution_status: statusMap.get(countryId) || "NATIVE",
-                region_name: regions,
-                province: provinces,
-                specific_locality: localities,
-              };
-            })
-          });
-        }
+        await animalDistributionRepo.syncDistributions(tx, id, input.countries, input.specific_localities);
       }
 
-      // 6. Sync Habitats (Environment)
+      // 6. Sync habitats
       if (input.habitats) {
-        await tx.animal_environment.deleteMany({
-          where: { animal_id: id }
-        });
-
-        if (input.habitats.length > 0) {
-          const { habitatRepo } = await import("@/repositories/habitat.repo");
-          const habitats = await habitatRepo.findOrCreate(input.habitats);
-
-          await tx.animal_environment.createMany({
-            data: habitats.map(h => ({
-              animal_id: id,
-              habitat_id: h.id,
-            }))
-          });
-        }
+        await habitatRepo.syncHabitats(tx, id, input.habitats);
       }
 
-      // 7. Sync Image
+      // 7. Sync image
       if (input.image) {
-        const existingImage = await tx.animal_images.findFirst({
-          where: { animal_id: id },
-        });
-        if (existingImage) {
-          await tx.animal_images.update({
-            where: { id: existingImage.id },
-            data: {
-              image_url: input.image,
-              source: input.image_source || null,
-              photographer_name: input.photographer_name || null,
-            },
-          });
-        } else {
-          await tx.animal_images.create({
-            data: {
-              animal_id: id,
-              image_url: input.image,
-              source: input.image_source || null,
-            },
-          });
-        }
+        await updateImage(tx, id, input.image, input.image_source, input.photographer_name);
       }
 
       return animal;
