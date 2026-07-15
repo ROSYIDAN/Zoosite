@@ -178,13 +178,3 @@ rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
 
 Overall average: **60-90% token reduction** on common development operations.
 <!-- /rtk-instructions -->
-
-
-## AI AGENT CONTEXT
-this file contains the progress of the project and the status of the project.
-so the other ai agent can understand what has been done and what needs to be done.
-this file save the whole session of the ai agent, what they have been worked on, so other ai agent 
-know the context of it.
-on each update on current day always update the ai-agent-context.md 
-so other ai agent know the current progress and status of the project.
-always wait for the user command to update this file.

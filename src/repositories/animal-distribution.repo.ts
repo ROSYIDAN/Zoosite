@@ -3,6 +3,30 @@ import { Prisma, DistributionStatus } from "@prisma/client";
 import type { CreateAnimalInput } from "@/lib/validations/animal.schema";
 import { serializeLocality } from "@/lib/mappers/animal.mapper";
 
+/**
+ * Parse a JSON-stored string field into unique, sorted string values.
+ * Handles both JSON arrays and plain strings gracefully.
+ */
+function parseUniqueValues<T extends Record<string, unknown>>(
+  rows: T[],
+  field: keyof T
+): string[] {
+  return [
+    ...new Set(
+      rows.flatMap((row) => {
+        const val = row[field];
+        if (!val || typeof val !== "string") return [];
+        try {
+          const parsed = JSON.parse(val);
+          return Array.isArray(parsed) ? parsed : [val];
+        } catch {
+          return [val];
+        }
+      }).filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+    ),
+  ].sort();
+}
+
 export const animalDistributionRepo = {
   /**
    * Find an animal by its primary common name (case-insensitive).
@@ -210,53 +234,10 @@ export const animalDistributionRepo = {
       distinct: ['region_name', 'province', 'specific_locality'],
     });
 
-    // Extract unique values, parse JSON arrays, and filter out nulls
-    const regions = [...new Set(
-      distributions
-        .flatMap(d => {
-          if (!d.region_name) return [];
-          try {
-            const parsed = JSON.parse(d.region_name);
-            return Array.isArray(parsed) ? parsed : [d.region_name];
-          } catch {
-            return [d.region_name];
-          }
-        })
-        .filter((r): r is string => typeof r === 'string' && r.trim().length > 0)
-    )].sort();
-
-    const provinces = [...new Set(
-      distributions
-        .flatMap(d => {
-          if (!d.province) return [];
-          try {
-            const parsed = JSON.parse(d.province);
-            return Array.isArray(parsed) ? parsed : [d.province];
-          } catch {
-            return [d.province];
-          }
-        })
-        .filter((p): p is string => typeof p === 'string' && p.trim().length > 0)
-    )].sort();
-
-    const localities = [...new Set(
-      distributions
-        .flatMap(d => {
-          if (!d.specific_locality) return [];
-          try {
-            const parsed = JSON.parse(d.specific_locality);
-            return Array.isArray(parsed) ? parsed : [d.specific_locality];
-          } catch {
-            return [d.specific_locality];
-          }
-        })
-        .filter((l): l is string => typeof l === 'string' && l.trim().length > 0)
-    )].sort();
-
     return {
-      regions,
-      provinces,
-      localities,
+      regions: parseUniqueValues(distributions, "region_name"),
+      provinces: parseUniqueValues(distributions, "province"),
+      localities: parseUniqueValues(distributions, "specific_locality"),
     };
   },
 

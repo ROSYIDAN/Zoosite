@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
+const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
 export const userRepo = {
   /**
    * Fetches user profile data by ID.
@@ -178,7 +180,6 @@ export const userRepo = {
    * Fetches a user by ID with fields required for requesting privileges.
    */
   async getUserById(id: string) {
-    const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     if (!id || !UUID_REGEX.test(id)) return null;
     return prisma.user.findUnique({
       where: { id },
@@ -195,7 +196,6 @@ export const userRepo = {
    * Manually suspends request privileges for a user.
    */
   async banUser(userId: string, isBanned: boolean, bannedUntil: Date | null = null) {
-    const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     if (!userId || !UUID_REGEX.test(userId)) {
       return { id: userId, is_request_banned: false, request_banned_until: null };
     }
@@ -213,7 +213,6 @@ export const userRepo = {
    * Resets the rejections timestamp for a user, recovering their strikes.
    */
   async resetRejectionsTimestamp(userId: string) {
-    const UUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     if (!userId || !UUID_REGEX.test(userId)) return null;
     return prisma.user.update({
       where: { id: userId },

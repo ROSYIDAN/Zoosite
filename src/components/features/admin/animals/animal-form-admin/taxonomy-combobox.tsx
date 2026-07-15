@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { useTaxonomySuggestions } from "@/hooks/use-taxonomy-suggestions";
 
 interface TaxonomyComboboxProps {
   field: "genus" | "family" | "ordo";
@@ -17,10 +17,6 @@ interface TaxonomyComboboxProps {
   };
 }
 
-// Simple in-memory cache: key → { data, timestamp }
-const suggestionCache = new Map<string, { data: string[]; ts: number }>();
-const CACHE_TTL_MS = 60_000; // 1 minute
-
 export default function TaxonomyCombobox({
   field,
   value,
@@ -29,117 +25,24 @@ export default function TaxonomyCombobox({
   className,
   filters,
 }: TaxonomyComboboxProps) {
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const [highlightIndex, setHighlightIndex] = useState(-1);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const fetchSuggestions = useCallback(
-    async (query: string) => {
-      const urlParams = new URLSearchParams({ field, q: query });
-
-      if (filters?.class_id) urlParams.set("class_id", filters.class_id);
-      if (filters?.family) urlParams.set("family", filters.family);
-      if (filters?.ordo) urlParams.set("ordo", filters.ordo);
-
-      const cacheKey = urlParams.toString();
-
-      // Check cache first
-      const cached = suggestionCache.get(cacheKey);
-      if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
-        setSuggestions(cached.data);
-        setIsOpen(cached.data.length > 0 && isFocused);
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/animals/taxonomy?${cacheKey}`);
-        if (res.ok) {
-          const data: string[] = await res.json();
-          // Store in cache
-          suggestionCache.set(cacheKey, { data, ts: Date.now() });
-          setSuggestions(data);
-          setIsOpen(data.length > 0 && isFocused);
-        }
-      } catch {
-        setSuggestions([]);
-      }
-    },
-    [field, isFocused, filters?.class_id, filters?.family, filters?.ordo]
-  );
-
-  // Debounced search on value change
-  useEffect(() => {
-    if (!isFocused) return;
-
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      fetchSuggestions(value);
-    }, 250);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [value, isFocused, fetchSuggestions]);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-        setIsFocused(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const selectSuggestion = (val: string) => {
-    onChange(val);
-    setIsOpen(false);
-    setHighlightIndex(-1);
-    inputRef.current?.blur();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOpen || suggestions.length === 0) return;
-
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setHighlightIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        setHighlightIndex((prev) =>
-          prev > 0 ? prev - 1 : suggestions.length - 1
-        );
-        break;
-      case "Enter":
-        e.preventDefault();
-        if (highlightIndex >= 0) {
-          selectSuggestion(suggestions[highlightIndex]);
-        }
-        break;
-      case "Escape":
-        setIsOpen(false);
-        setHighlightIndex(-1);
-        break;
-    }
-  };
-
-  // Check if current value exactly matches a suggestion
-  const isFromDb = suggestions.some(
-    (s) => s.toLowerCase() === value.toLowerCase()
-  );
+  const {
+    suggestions,
+    isOpen,
+    setIsOpen,
+    highlightIndex,
+    containerRef,
+    inputRef,
+    selectSuggestion,
+    handleKeyDown,
+    fetchSuggestions,
+    isFromDb,
+    setIsFocused,
+  } = useTaxonomySuggestions({
+    field,
+    value,
+    onChange,
+    filters,
+  });
 
   return (
     <div ref={containerRef} className="relative">
