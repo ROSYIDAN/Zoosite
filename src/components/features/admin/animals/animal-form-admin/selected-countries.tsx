@@ -1,6 +1,7 @@
 "use client";
 
 import { Country } from "@/hooks/use-country-selection";
+import CountryFlag from "@/components/ui/country-flag";
 
 interface SelectedCountriesProps {
   selectedCountries: Country[];
@@ -20,15 +21,7 @@ export function SelectedCountries({ selectedCountries, removeCountry }: Selected
           className="flex items-center gap-1.5 px-3 py-1 bg-[#f4f6f0] hover:bg-red-50 text-[#3c5e2d] hover:text-red-700 rounded-full border border-[#c2c9bb]/60 cursor-pointer transition-all group font-medium text-sm outline-none focus:ring-2 focus:ring-[#2d5a27]/30"
           title={`Click to remove ${c.country}`}
         >
-          {c.country_flag ? (
-            <span className="text-base leading-none" aria-hidden="true">
-              {c.country_flag}
-            </span>
-          ) : (
-            <span className="text-[#3c5e2d] group-hover:text-red-700" aria-hidden="true">
-              📍
-            </span>
-          )}
+          <CountryFlag flag={c.country_flag} alt={c.country} className="text-base leading-none" fallbackEmoji="📍" />
           <span>{c.country}</span>
           <span className="text-xs text-gray-400 group-hover:text-red-500 font-bold ml-0.5" aria-hidden="true">
             ×

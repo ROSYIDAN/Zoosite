@@ -25,7 +25,9 @@ export default function NativeAnimalsWidget() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("/api/native-animals?limit=4&sortBy=newest");
+        const res = await fetch("/api/native-animals?limit=4&sortBy=newest", {
+          cache: "no-store",
+        });
         if (res.ok) {
           const json = await res.json();
           setAnimals(json.animals || []);

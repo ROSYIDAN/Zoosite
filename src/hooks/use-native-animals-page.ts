@@ -80,7 +80,9 @@ export function useNativeAnimalsPage() {
     if (!currentCountryId) return;
     async function fetchLocationOptions() {
       try {
-        const res = await fetch(`/api/native-animals/locations?countryId=${currentCountryId}`);
+        const res = await fetch(`/api/native-animals/locations?countryId=${currentCountryId}`, {
+          cache: "no-store",
+        });
         if (res.ok) {
           const json = await res.json();
           setLocationOptions({
@@ -102,7 +104,9 @@ export function useNativeAnimalsPage() {
     async function fetchAnimals() {
       setIsAnimalsLoading(true);
       try {
-        const res = await fetch(`/api/native-animals?countryId=${currentCountryId}&status=ALL&limit=1000`);
+        const res = await fetch(`/api/native-animals?countryId=${currentCountryId}&status=ALL&limit=1000`, {
+          cache: "no-store",
+        });
         if (res.ok) {
           const json = await res.json();
           setAnimals(json.animals || []);

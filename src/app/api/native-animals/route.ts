@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+
+export const dynamic = "force-dynamic";
 import { userService } from "@/services/user.service";
 import { handleError } from "@/lib/errors";
 import { animalDistributionService } from "@/services/animal-distribution.service";

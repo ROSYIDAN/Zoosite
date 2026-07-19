@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useClickOutside } from "@/hooks/use-click-outside";
 import { Country } from "@/hooks/use-country-selection";
+import CountryFlag from "@/components/ui/country-flag";
 
 interface CountrySearchDropdownProps {
   countryQuery: string;
@@ -88,13 +89,7 @@ export function CountrySearchDropdown({
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    {c.country_flag ? (
-                      <span className="text-base" aria-hidden="true">
-                        {c.country_flag}
-                      </span>
-                    ) : (
-                      <span aria-hidden="true">📍</span>
-                    )}
+                    <CountryFlag flag={c.country_flag} alt={c.country} className="text-base" fallbackEmoji="📍" />
                     <span>{c.country}</span>
                   </div>
                   {isSelected && (

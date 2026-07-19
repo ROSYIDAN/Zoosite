@@ -9,11 +9,12 @@ import { userService } from "@/services/user.service";
 
 const MAX_RECENT_ANIMALS = 6;
 
-const getCachedRecentAnimals = unstable_cache(
-  async (countryId: string | null) => dashboardService.getRecentAnimals(MAX_RECENT_ANIMALS, countryId),
-  ["new-animals-cache"],
-  { revalidate: 120 }, // 2 minutes — keeps "new this week" fresh
-);
+const getCachedRecentAnimals = (countryId: string | null) =>
+  unstable_cache(
+    async () => dashboardService.getRecentAnimals(MAX_RECENT_ANIMALS, countryId),
+    ["new-animals-cache", countryId || "none"],
+    { revalidate: 120 } // 2 minutes — keeps "new this week" fresh
+  )();
 
 /**
  * Formats a date (Date or ISO string) into a short month-day string (e.g. "Jun 16").
