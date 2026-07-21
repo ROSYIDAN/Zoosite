@@ -1,42 +1,45 @@
 import React from "react";
+import DashboardLayout from "@/components/layouts/dashboard/dashboard-layout";
 
 /**
  * Loading skeleton for the main Animals Archive page.
+ * Matching the exact layouts and design tokens of AnimalsArchivePage.
  */
 export default function AnimalsArchiveLoading() {
   return (
-    <div className="p-8 max-w-[1440px] mx-auto">
-      {/* Header Skeleton */}
-      <div className="mb-12">
-        <div className="w-64 h-12 bg-stone-200 rounded animate-pulse mb-4" />
-        <div className="w-96 h-6 bg-stone-100 rounded animate-pulse" />
-      </div>
+    <DashboardLayout>
+      <div className="space-y-8 max-w-[1440px] mx-auto">
+        {/* Header Skeleton */}
+        <div className="p-6 bg-white/40 dark:bg-[#232621]/40 rounded-r-3xl rounded-l-lg border border-[#1a1c19]/5 dark:border-white/5 border-l-4 border-l-primary dark:border-l-[#d0e8c5] backdrop-blur-sm shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] animate-pulse">
+          <div className="w-48 h-8 bg-stone-200 dark:bg-stone-800 rounded mb-2" />
+          <div className="w-32 h-4 bg-stone-100 dark:bg-stone-900 rounded" />
+        </div>
 
-      {/* Filter/Search Bar Skeleton */}
-      <div className="flex gap-4 mb-10 overflow-x-hidden">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="w-32 h-10 bg-stone-100 rounded-full shrink-0" />
-        ))}
-      </div>
+        {/* Filter/Search Bar Skeleton */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between animate-pulse">
+          {/* Search Input Skeleton */}
+          <div className="flex-1 w-full max-w-2xl h-14 bg-surface-container-lowest dark:bg-[#232621]/50 rounded-2xl border border-outline-variant/10" />
+          {/* Sort Dropdown Skeleton */}
+          <div className="w-full sm:w-48 h-12 bg-surface-container-lowest dark:bg-[#232621]/50 rounded-xl border border-outline-variant/10" />
+        </div>
 
-      {/* Grid Skeleton */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {[...Array(8)].map((_, i) => (
-          <div key={i} className="group flex flex-col bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm animate-pulse">
-            {/* Image Placeholder */}
-            <div className="aspect-[4/5] bg-stone-200" />
-            {/* Title Placeholder */}
-            <div className="p-6 space-y-3">
-              <div className="w-1/2 h-4 bg-stone-100 rounded" />
-              <div className="w-3/4 h-8 bg-stone-200 rounded" />
-              <div className="flex gap-2 pt-2">
-                <div className="w-16 h-5 bg-stone-100 rounded-full" />
-                <div className="w-16 h-5 bg-stone-100 rounded-full" />
+        {/* Grid Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-pulse">
+          {[...Array(12)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-surface-container-low dark:bg-[#232621]/40 rounded-2xl overflow-hidden border border-outline-variant/10"
+            >
+              {/* Image Placeholder */}
+              <div className="aspect-video bg-stone-200 dark:bg-stone-800" />
+              {/* Title Placeholder */}
+              <div className="p-4">
+                <div className="w-2/3 h-5 bg-stone-200 dark:bg-stone-800 rounded animate-pulse" />
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

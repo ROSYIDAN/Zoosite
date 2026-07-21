@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { handleError } from "@/lib/errors";
 import { animalService } from "@/services/animal.service";
 import {
@@ -44,6 +45,8 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await animalService.create(parsed.data);
+    revalidateTag("new-animals", "default");
+    revalidateTag("trending-animals", "default");
     return NextResponse.json({ message: "Animal created successfully" }, { status: 201 });
   } catch (error) {
     return handleError(error);

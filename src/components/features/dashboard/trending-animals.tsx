@@ -6,7 +6,7 @@ import { unstable_cache } from "next/cache";
 const getCachedTrending = unstable_cache(
   async () => dashboardService.getTrending({ detail: "full" }),
   ["trending-animals-cache"],
-  { revalidate: 300 } // 5 minutes cache
+  { revalidate: 300, tags: ["trending-animals"] } // 5 minutes cache
 );
 
 /**

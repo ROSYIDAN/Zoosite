@@ -13,7 +13,7 @@ const getCachedRecentAnimals = (countryId: string | null) =>
   unstable_cache(
     async () => dashboardService.getRecentAnimals(MAX_RECENT_ANIMALS, countryId),
     ["new-animals-cache", countryId || "none"],
-    { revalidate: 120 } // 2 minutes — keeps "new this week" fresh
+    { revalidate: 120, tags: ["new-animals"] } // 2 minutes — keeps "new this week" fresh
   )();
 
 /**
