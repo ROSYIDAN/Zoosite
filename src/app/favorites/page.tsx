@@ -5,6 +5,7 @@ import Link from "next/link";
 import NavigationBreadcrumbs from "@/components/breadcrumbs/NavigationBreadcrumbs";
 import AnimalCardGrid from "@/components/grid/animal-card-grid";
 import { useFavorites } from "@/store/useFavorites";
+import FavoritesLoading from "./loading";
 
 export default function FavoritesPage() {
   const { favorites } = useFavorites();
@@ -15,11 +16,7 @@ export default function FavoritesPage() {
   }, []);
 
   if (!isMounted) {
-    return (
-      <div className="px-8 py-10 max-w-full mx-auto min-h-[60vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <FavoritesLoading />;
   }
 
   return (

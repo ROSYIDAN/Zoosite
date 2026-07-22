@@ -15,14 +15,9 @@ export function MasteryGate({ children }: { children: React.ReactNode }) {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) {
-    return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 rounded-full border-4 border-stone-200 border-t-amber-500 animate-spin" />
-        <span className="text-sm text-stone-400 font-semibold tracking-wider uppercase">Loading Mystery Module...</span>
-      </div>
-    );
-  }
+  // ponytail: return null for hydration gate — delay is <1 frame, no visual needed.
+  // Upgrade to skeleton if MasteryGate ever does async data fetching client-side.
+  if (!isMounted) return null;
 
   const isUnlocked = completedLevels.includes("hard");
 

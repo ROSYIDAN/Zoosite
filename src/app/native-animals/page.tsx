@@ -5,6 +5,7 @@ import PageHeader from "@/components/features/native-animals/page-header";
 import FilterBar from "@/components/features/native-animals/filter-bar";
 import AnimalGrid from "@/components/features/native-animals/animal-grid";
 import { useNativeAnimalsPage } from "@/hooks/use-native-animals-page";
+import NativeAnimalsLoading from "./loading";
 
 /**
  * Native Animals Page - Full page showing all native and endemic animals
@@ -37,13 +38,7 @@ export default function NativeAnimalsPage() {
   } = useNativeAnimalsPage();
 
   if (isLoading || !currentCountry) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </DashboardLayout>
-    );
+    return <NativeAnimalsLoading />;
   }
 
   return (
@@ -92,8 +87,19 @@ export default function NativeAnimalsPage() {
         />
 
         {isAnimalsLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-pulse">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-outline-variant/20 bg-white dark:bg-[#232621] overflow-hidden"
+              >
+                <div className="h-40 bg-stone-200 dark:bg-stone-800" />
+                <div className="p-4 space-y-2">
+                  <div className="h-5 w-28 bg-stone-200 dark:bg-stone-800 rounded" />
+                  <div className="h-3 w-20 bg-stone-100 dark:bg-stone-700 rounded" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <AnimalGrid animals={filteredAnimals} />
